@@ -36,7 +36,7 @@ public class OverlayIndex
 {
 	private static final Set<Integer> overlays = new HashSet<>();
 
-	static
+	/*static
 	{
 		try (InputStream indexStream = OverlayIndex.class.getResourceAsStream("/runelite/index");
 			DataInputStream in = new DataInputStream(indexStream))
@@ -51,7 +51,7 @@ public class OverlayIndex
 		{
 			log.warn("unable to load overlay index", ex);
 		}
-	}
+	}*/
 
 	public static boolean hasOverlay(int indexId, int archiveId)
 	{
