@@ -258,11 +258,7 @@ public class Core extends Plugin
 	{
 		return Arrays.stream(string.split(",")).map(String::trim).mapToInt(Integer::parseInt).toArray();
 	}
-	public List<Integer> stringToIntList(String string)
-	{
-		return (string == null || string.trim().equals("")) ? List.of(0) :
-				Arrays.stream(string.split(",")).map(String::trim).map(Integer::parseInt).collect(Collectors.toList());
-	}
+
 
 	/*
 	Find closest player
@@ -1087,7 +1083,7 @@ Presses a key
 			return;
 		}
 
-		var entries = client.getMenuEntries();
+		/*var entries = client.getMenuEntries();
 		int putAtTopId = -1;
 		for (int i = 0; i < entries.length; i++)
 		{
@@ -1105,7 +1101,7 @@ Presses a key
 			entries[entries.length - 1] = entries[putAtTopId];
 			entries[putAtTopId] = temp;
 			client.setMenuEntries(entries);
-		}
+		}*/			/* DEPRECATED */
 	}
 
 	public boolean isMoving(LocalPoint lastTickLocalPoint)
@@ -1254,10 +1250,6 @@ Presses a key
 
 			return def;
 		}
-	}
-
-	public int itemOptionToId(int itemId, String match) {
-		return itemOptionToId(itemId, List.of(match));
 	}
 
 	public int itemOptionToId(int itemId, List<String> match) {
