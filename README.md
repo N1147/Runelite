@@ -20,6 +20,8 @@ For more information visit the [RuneLite Wiki](https://github.com/runelite/runel
 
 RuneLite is licensed under the BSD 2-clause license. See the license header in the respective file to be sure.
 
-## Contribute and Develop
+## Bot / Automation Features
 
-We've set up a separate document for our [contribution guidelines](https://github.com/runelite/runelite/blob/master/.github/CONTRIBUTING.md).
+For bot/automation usage, we have included our own "Utils" plugin, in which you will find all of the supporting code for your bot plugins. This will make creating your bot plugins VERY simple, with functions such as: useItem(ID), activatePrayer(Prayer), clickSpell(Spell), findNearestBank() and many, many more. Some of the previously removed methods by RuneLite to retrieve the locations and click points of objects/items have been added back into the client, also known as Queries. 
+
+We have also enabled sideloading plugins for all users (I.E Developer mode) to allow for easier access to the tools required to use, and create your plugins. 
