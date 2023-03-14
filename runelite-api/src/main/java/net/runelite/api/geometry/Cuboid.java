@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2020 ThatGamerBlue
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.api;
+package net.runelite.api.geometry;
 
-import java.awt.Shape;
+import net.runelite.api.coords.WorldPoint;
 
-/**
- * Represents a decorative object, such as an object on a wall.
- */
-public interface DecorativeObject extends TileObject, Locatable {
-	/**
-	 * Gets the convex hull of the objects model.
-	 *
-	 * @return the convex hull
-	 * @see net.runelite.api.model.Jarvis
-	 */
-	Shape getConvexHull();
-	Shape getConvexHull2();
+public class Cuboid
+{
+	private WorldPoint southWest;
+	private WorldPoint northEast;
 
-	Renderable getRenderable();
-	Renderable getRenderable2();
+	public Cuboid(int x1, int y1, int z1, int x2, int y2, int z2)
+	{
+		this(new WorldPoint(x1, y1, z1), new WorldPoint(x2, y2, z2));
+	}
 
-	/**
-	 * Decorative object x offset. This is added to the x position of the object, and is used to
-	 * account for walls of varying widths.
-	 */
-	int getXOffset();
+	public Cuboid(WorldPoint southWest, WorldPoint northEast)
+	{
+		this.southWest = southWest;
+		this.northEast = northEast;
+	}
 
-	/**
-	 * Decorative object y offset. This is added to the z position of the object, and is used to
-	 * account for walls of varying widths.
-	 */
-	int getYOffset();
-
-	/**
-	 * A bitfield containing various flags:
-	 * <pre>{@code
-	 * object type id = bits & 0x20
-	 * orientation (0-3) = bits >>> 6 & 3
-	 * supports items = bits >>> 8 & 1
-	 * }</pre>
-	 */
-	int getConfig();
+	public boolean contains(WorldPoint worldPoint)
+	{
+		if (worldPoint.getPlane() < southWest.getPlane() || worldPoint.getPlane() > northEast.getPlane())
+		{
+			return false;
+		}
+		if (worldPoint.getY() < southWest.getY() || worldPoint.getY() > northEast.getY())
+		{
+			return false;
+		}
+		return worldPoint.getX() >= southWest.getX() && worldPoint.getX() <= northEast.getX();
+	}
 }

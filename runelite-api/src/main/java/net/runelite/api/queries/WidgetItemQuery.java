@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2017, Devin French <https://github.com/devinfrench>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,64 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.api;
+package net.runelite.api.queries;
 
-import java.awt.Shape;
+import net.runelite.api.Query;
+import net.runelite.api.QueryResults;
+import net.runelite.api.widgets.WidgetItem;
 
-/**
- * Represents a decorative object, such as an object on a wall.
- */
-public interface DecorativeObject extends TileObject, Locatable {
-	/**
-	 * Gets the convex hull of the objects model.
-	 *
-	 * @return the convex hull
-	 * @see net.runelite.api.model.Jarvis
-	 */
-	Shape getConvexHull();
-	Shape getConvexHull2();
+import java.util.Collection;
+import java.util.function.Predicate;
 
-	Renderable getRenderable();
-	Renderable getRenderable2();
+public abstract class WidgetItemQuery extends Query<WidgetItem, WidgetItemQuery, QueryResults<WidgetItem>>
+{
+	public WidgetItemQuery idEquals(int... ids)
+	{
+		predicate = and(item ->
+		{
+			for (int id : ids)
+			{
+				if (item.getId() == id)
+				{
+					return true;
+				}
+			}
+			return false;
+		});
+		return this;
+	}
 
-	/**
-	 * Decorative object x offset. This is added to the x position of the object, and is used to
-	 * account for walls of varying widths.
-	 */
-	int getXOffset();
+	public WidgetItemQuery idEquals(Collection<Integer> ids)
+	{
+		predicate = and((object) -> ids.contains(object.getId()));
+		return this;
+	}
 
-	/**
-	 * Decorative object y offset. This is added to the z position of the object, and is used to
-	 * account for walls of varying widths.
-	 */
-	int getYOffset();
+	public WidgetItemQuery indexEquals(int... indexes)
+	{
+		predicate = and(item ->
+		{
+			for (int index : indexes)
+			{
+				if (item.getWidget().getIndex() == index)
+				{
+					return true;
+				}
+			}
+			return false;
+		});
+		return this;
+	}
 
-	/**
-	 * A bitfield containing various flags:
-	 * <pre>{@code
-	 * object type id = bits & 0x20
-	 * orientation (0-3) = bits >>> 6 & 3
-	 * supports items = bits >>> 8 & 1
-	 * }</pre>
-	 */
-	int getConfig();
+	public WidgetItemQuery quantityEquals(int quantity)
+	{
+		predicate = and(item -> item.getQuantity() == quantity);
+		return this;
+	}
+
+	public WidgetItemQuery filter(Predicate<WidgetItem> other)
+	{
+		predicate = and(other);
+		return this;
+	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2017, Devin French <https://github.com/devinfrench>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,37 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.api;
+package net.runelite.api.queries;
 
-import java.awt.Shape;
+import net.runelite.api.Client;
+import net.runelite.api.LocatableQueryResults;
+import net.runelite.api.Tile;
+import net.runelite.api.WallObject;
 
-/**
- * Represents a decorative object, such as an object on a wall.
- */
-public interface DecorativeObject extends TileObject, Locatable {
-	/**
-	 * Gets the convex hull of the objects model.
-	 *
-	 * @return the convex hull
-	 * @see net.runelite.api.model.Jarvis
-	 */
-	Shape getConvexHull();
-	Shape getConvexHull2();
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-	Renderable getRenderable();
-	Renderable getRenderable2();
+public class WallObjectQuery extends TileObjectQuery<WallObject, WallObjectQuery>
+{
+	@Override
+	public LocatableQueryResults<WallObject> result(Client client)
+	{
+		return new LocatableQueryResults<>(getWallObjects(client).stream()
+			.filter(Objects::nonNull)
+			.filter(predicate)
+			.distinct()
+			.collect(Collectors.toList()));
+	}
 
-	/**
-	 * Decorative object x offset. This is added to the x position of the object, and is used to
-	 * account for walls of varying widths.
-	 */
-	int getXOffset();
-
-	/**
-	 * Decorative object y offset. This is added to the z position of the object, and is used to
-	 * account for walls of varying widths.
-	 */
-	int getYOffset();
-
-	/**
-	 * A bitfield containing various flags:
-	 * <pre>{@code
-	 * object type id = bits & 0x20
-	 * orientation (0-3) = bits >>> 6 & 3
-	 * supports items = bits >>> 8 & 1
-	 * }</pre>
-	 */
-	int getConfig();
+	private Collection<WallObject> getWallObjects(Client client)
+	{
+		Collection<WallObject> objects = new ArrayList<>();
+		for (Tile tile : getTiles(client))
+		{
+			objects.add(tile.getWallObject());
+		}
+		return objects;
+	}
 }

@@ -32,8 +32,7 @@ import java.awt.Shape;
  * Most object in the RuneScape world are considered as game objects. Things
  * such as trees, anvils, boxes, etc are all game objects.
  */
-public interface GameObject extends TileObject
-{
+public interface GameObject extends TileObject, Locatable {
 	/**
 	 * Get the size of this object, in tiles, on the x axis
 	 *
