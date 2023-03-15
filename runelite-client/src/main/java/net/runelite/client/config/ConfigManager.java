@@ -515,6 +515,8 @@ public class ConfigManager
 					continue;
 				}
 
+				log.info("Profile '{}' (sync: {}, active: {})", p.getName(), p.isSync(), p.isActive());
+
 				// --profile
 				if (configProfileName != null)
 				{
