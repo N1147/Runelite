@@ -47,7 +47,7 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
-import net.runelite.client.events.ProfileChanged;
+import net.runelite.client.events.PluginChanged;
 
 /**
  * Manages state of all game overlays
@@ -125,12 +125,9 @@ public class OverlayManager
 	}
 
 	@Subscribe
-	public void onProfileChanged(ProfileChanged event)
+	public void onPluginChanged(final PluginChanged event)
 	{
-		synchronized (this)
-		{
-			overlays.forEach(this::loadOverlay);
-		}
+		overlays.forEach(this::loadOverlay);
 		rebuildOverlayLayers();
 	}
 
