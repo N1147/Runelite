@@ -42,12 +42,10 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -373,40 +371,30 @@ public class ConfigManager
 					targetProfile.setActive(true);
 				}
 
+				ConfigProfile rsProfile = lock.findProfile(RSPROFILE_NAME);
 				if (rsProfile == null)
 				{
-					rsProfile = lock.findProfile(RSPROFILE_NAME);
-					if (rsProfile == null)
-					{
-						rsProfile = lock.createProfile(RSPROFILE_NAME, RSPROFILE_ID);
-					}
-					rsProfile.setSync(true);
+					rsProfile = lock.createProfile(RSPROFILE_NAME, RSPROFILE_ID);
 				}
+				rsProfile.setSync(true);
 
-				if (rsProfileConfigProfile == null)
-				{
-					rsProfileConfigProfile = new ConfigData(ProfileManager.profileConfigFile(rsProfile));
-				}
-
-				importAndMigrate(lock, configFile, targetProfile);
+				importAndMigrate(configFile, targetProfile, rsProfile);
 			}
 		}
 	}
 
-	public void importAndMigrate(ProfileManager.Lock lock, File from, ConfigProfile targetProfile)
+	public static void importAndMigrate(File from, ConfigProfile targetProfile, ConfigProfile rsProfile)
 	{
 		ConfigData migratingData = new ConfigData(from);
 		ConfigData configData = new ConfigData(ProfileManager.profileConfigFile(targetProfile));
+		ConfigData rsData = new ConfigData(ProfileManager.profileConfigFile(rsProfile));
 
 		log.debug("Importing profile from {}", from);
 
-		Map<Long, String> accountHashToOldRSProfile = new HashMap<>();
-		List<Map.Entry<String, String>> rsprofileKeys = new ArrayList<>();
-
 		int keys = 0;
-		for (Map.Entry<String, String> entry : migratingData.get().entrySet())
+		for (String wholeKey : migratingData.keySet())
 		{
-			String[] split = splitKey(entry.getKey());
+			String[] split = splitKey(wholeKey);
 			if (split == null)
 			{
 				continue;
@@ -416,61 +404,18 @@ public class ConfigManager
 
 			if (profile != null)
 			{
-				if (RSPROFILE_GROUP.equals(split[KEY_SPLITTER_GROUP]) && RSPROFILE_ACCOUNT_HASH.equals(split[KEY_SPLITTER_KEY]))
-				{
-					try
-					{
-						accountHashToOldRSProfile.put(Long.parseLong(entry.getValue()), profile);
-					}
-					catch (NumberFormatException ignored)
-					{
-					}
-				}
-
-				rsprofileKeys.add(entry);
+				rsData.setProperty(wholeKey, migratingData.getProperty(wholeKey));
 			}
 			else
 			{
-				configData.setProperty(entry.getKey(), entry.getValue());
-				++keys;
-			}
-		}
-
-		if (accountHashToOldRSProfile.size() > 0)
-		{
-			Map<String, String> oldToNewRSProfile = new HashMap<>();
-			for (RuneScapeProfile existingRSP : getRSProfiles())
-			{
-				if (existingRSP.getAccountHash() != RuneScapeProfile.ACCOUNT_HASH_INVALID)
-				{
-					String oldRSP = accountHashToOldRSProfile.get(existingRSP.getAccountHash());
-					if (oldRSP != null && !oldRSP.equals(existingRSP.getKey()))
-					{
-						if (oldToNewRSProfile.putIfAbsent(oldRSP, existingRSP.getKey()) == null)
-						{
-							log.info("Converting imported rsprofile \"{}\" to \"{}\"", oldRSP, existingRSP.getKey());
-						}
-					}
-				}
+				configData.setProperty(wholeKey, migratingData.getProperty(wholeKey));
 			}
 
-			for (Map.Entry<String, String> entry : rsprofileKeys)
-			{
-				String[] split = splitKey(entry.getKey());
-				assert split != null;
-				String profile = split[KEY_SPLITTER_PROFILE];
-				profile = oldToNewRSProfile.getOrDefault(profile, profile);
-				if (getConfiguration(split[KEY_SPLITTER_GROUP], profile, split[KEY_SPLITTER_KEY]) == null)
-				{
-					setConfiguration(split[KEY_SPLITTER_GROUP], profile, split[KEY_SPLITTER_KEY], entry.getValue());
-				}
-			}
+			++keys;
 		}
 
 		configData.patch(configData.swapChanges());
-
-		rsProfile = updateProfile(lock, rsProfile);
-		saveConfiguration(lock, rsProfile, rsProfileConfigProfile);
+		rsData.patch(rsData.swapChanges());
 
 		log.info("Finished importing {} keys", keys);
 	}
