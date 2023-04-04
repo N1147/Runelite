@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Provides;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -92,7 +93,6 @@ import net.runelite.client.util.HotkeyListener;
 import net.runelite.client.util.ImageCapture;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
-import net.runelite.client.util.OSType;
 import net.runelite.client.util.Text;
 
 @PluginDescriptor(
@@ -110,7 +110,6 @@ public class ScreenshotPlugin extends Plugin
 	private static final int CORRUPTED_GAUNTLET_REGION = 7768;
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("([0-9]+)");
 	private static final Pattern LEVEL_UP_PATTERN = Pattern.compile(".*Your ([a-zA-Z]+) (?:level is|are)? now (\\d+)\\.");
-	private static final Pattern LEVEL_UP_MESSAGE_PATTERN = Pattern.compile("Congratulations, you've just advanced your ([a-zA-Z]+) level. You are now level (\\d+)\\.");
 	private static final Pattern BOSSKILL_MESSAGE_PATTERN = Pattern.compile("Your (.+) kill count is: <col=ff0000>(\\d+)</col>.");
 	private static final Pattern VALUABLE_DROP_PATTERN = Pattern.compile(".*Valuable drop: ([^<>]+?\\(((?:\\d+,?)+) coins\\))(?:</col>)?");
 	private static final Pattern UNTRADEABLE_DROP_PATTERN = Pattern.compile(".*Untradeable drop: ([^<>]+)(?:</col>)?");
@@ -527,19 +526,6 @@ public class ScreenshotPlugin extends Plugin
 				takeScreenshot(fileName, SD_COMBAT_ACHIEVEMENTS);
 			}
 		}
-
-		if (client.getVarbitValue(Varbits.DISABLE_LEVEL_UP_INTERFACE) == 1 && config.screenshotLevels())
-		{
-			Matcher m = LEVEL_UP_MESSAGE_PATTERN.matcher(chatMessage);
-			if (m.find())
-			{
-				String skillName = m.group(1);
-				String skillLevel = m.group(2);
-				String fileName = skillName + "(" + skillLevel + ")";
-				String screenshotSubDir = "Levels";
-				takeScreenshot(fileName, screenshotSubDir);
-			}
-		}
 	}
 
 	@Subscribe
@@ -912,8 +898,8 @@ public class ScreenshotPlugin extends Plugin
 		else
 		{
 			// create a new image, paint the client ui to it, and then draw the screenshot to that
-			final AffineTransform transform = OSType.getOSType() == OSType.MacOS ? new AffineTransform() :
-				clientUi.getGraphicsConfiguration().getDefaultTransform();
+			final GraphicsConfiguration graphicsConfiguration = clientUi.getGraphicsConfiguration();
+			final AffineTransform transform = graphicsConfiguration.getDefaultTransform();
 
 			// scaled client dimensions
 			int clientWidth = getScaledValue(transform.getScaleX(), clientUi.getWidth());
