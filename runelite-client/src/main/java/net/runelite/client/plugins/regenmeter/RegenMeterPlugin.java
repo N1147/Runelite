@@ -163,10 +163,6 @@ public class RegenMeterPlugin extends Plugin
 
 
 		int ticksPerHPRegen = NORMAL_HP_REGEN_TICKS;
-		if (client.isPrayerActive(Prayer.RAPID_HEAL))
-		{
-			ticksPerHPRegen /= 2;
-		}
 
 		if (client.getVarbitValue(Varbits.LEAGUE_RELIC_3) == TRAILBLAZER_LEAGUE_FLUID_STRIKES_RELIC)
 		{

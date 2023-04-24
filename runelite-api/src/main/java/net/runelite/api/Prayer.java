@@ -76,6 +76,7 @@ public enum Prayer
 		this.widgetInfo = widgetInfo;
 	}
 
+	////			Withdraw-X = SetVar 6590 -> 3
 	/**
 	 * Gets the varbit that stores whether the prayer is active or not.
 	 *

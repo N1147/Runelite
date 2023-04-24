@@ -326,7 +326,7 @@ public class Core extends Plugin
 		}
 
 		return new GameObjectQuery()
-				.filter (i -> client.getObjectDefinition(i.getId()).getName().toLowerCase().contains(name.toLowerCase()))
+				//.filter (i -> client.getObjectDefinition(i.getId()).getName().toLowerCase().contains(name.toLowerCase()))
 				.nameEquals(name)
 				.result(client)
 				.nearestTo((Locatable) client.getLocalPlayer());
@@ -610,6 +610,23 @@ find nearest NPC attacking player limited by name
 					.nearestTo((Locatable) client.getLocalPlayer());
 		}
 
+	}
+
+	@Nullable
+	public WallObject findNearestWallObject(String name)
+	{
+		assert client.isClientThread();
+
+		if (client.getLocalPlayer() == null)
+		{
+			return null;
+		}
+
+		return new WallObjectQuery()
+				//.filter (i -> client.getObjectDefinition(i.getId()).getName().toLowerCase().contains(name.toLowerCase()))
+				.nameEquals(name)
+				.result(client)
+				.nearestTo((Locatable) client.getLocalPlayer());
 	}
 	/*
 find nearest wall object
@@ -2582,7 +2599,7 @@ get all Inventory items
 		}
 	}
 
-	public void interactNPC(int opcode, long sleepDelay, NPC npc)
+	public void interactNPC(NPC npc)
 	{
 		if(npc!=null){
 			if (npc.getWorldLocation().distanceTo(client.getLocalPlayer().getWorldLocation()) >= 10) {
@@ -2594,16 +2611,16 @@ get all Inventory items
 		}
 	}
 
-	public void interactNPC(int opcode, long sleepDelay, int... id)
+	public void interactNPC(int... id)
 	{
 		NPC targetObject = findNearestNpc(id);
 		if(targetObject!=null){
-			targetMenu = new NewMenuEntry("", "", targetObject.getIndex(), opcode, 0, 0, false);
+			//targetMenu = new NewMenuEntry("", "", targetObject.getIndex(), opcode, 0, 0, false);
 			if (targetObject.getConvexHull() == null) {
 				walking.walkTileOnScreen(targetObject.getWorldLocation());
 			}
 			else
-			doInvoke(targetMenu, targetObject.getConvexHull().getBounds());
+			doInvoke(null, targetObject.getConvexHull().getBounds());
 		}
 	}
 	public Point getRandomNullPoint()
@@ -2722,17 +2739,17 @@ get all Inventory items
 		}
 	}
 
-	public void withdrawItemAmount(int bankItemID, int amount)
+	public void withdrawItemAmount(int bankItemID, int amount, boolean noted)
 	{
 		clientThread.invokeLater(() -> {
-			Widget item = getBankItemWidget(bankItemID);
+			Widget item = getBankItemWidget(bankItemID);	//Withdraw-X = SetVar 6590 -> 3
 			if (item != null)
 			{
 				int identifier;
 				switch (amount)
 				{
 					case 1:
-						identifier = (client.getVarbitValue(6590) == 0) ? 1 : 2;
+						identifier = (client.getVarbitValue(6590) == 0) ? 1 : 2; //1 unnoted 2 noted
 						break;
 					case 5:
 						identifier = 3;
@@ -2744,11 +2761,34 @@ get all Inventory items
 						identifier = 6;
 						break;
 				}
-				targetMenu = new NewMenuEntry("", "", identifier, MenuAction.CC_OP.getId(), item.getIndex(), 786445, false);
+				if (!noted && client.getVarbitValue(6590) == 1) {
+					Widget unnoteItems = client.getWidget(12, 22);
+					clickWidget(unnoteItems);
+				}
+				if (noted && client.getVarbitValue(6590) == 0) {
+					Widget noteItems = client.getWidget(12, 24);
+					clickWidget(noteItems);
+				}
+				if (identifier == 1 || identifier == 2) {
+					Widget withdraw1 = client.getWidget(12, 28);
+					clickWidget(withdraw1);
+				}
+				else if (identifier == 3) {
+					Widget withdraw5 = client.getWidget(12, 30);
+					clickWidget(withdraw5);
+				}
+				else if (identifier == 4) {
+					Widget withdraw10 = client.getWidget(12, 32);
+					clickWidget(withdraw10);
+				}
+				else if (identifier == 6) {
+					Widget withdrawX = client.getWidget(12, 34);
+					clickWidget(withdrawX);
+				}
+				//targetMenu = new NewMenuEntry("", "", identifier, MenuAction.CC_OP.getId(), item.getIndex(), 786445, false);
 				doInvoke(targetMenu, item.getBounds());
 				//delayMouseClick(new Rectangle(0, 0), random(100, 300));
 				//clientThread.invoke(() -> client.invokeMenuAction("", "", identifier, MenuAction.CC_OP.getId(), item.getIndex(), 786445));
-
 				if (identifier == 6)
 				{
 					//executorService.submit(() -> {

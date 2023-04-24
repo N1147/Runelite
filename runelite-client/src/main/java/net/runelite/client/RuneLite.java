@@ -349,17 +349,7 @@ public class RuneLite
 		// Tell the plugin manager if client is outdated or not
 		pluginManager.setOutdated(isOutdated);
 
-		// Load the plugins, but does not start them yet.
-		// This will initialize configuration
-		pluginManager.loadCorePlugins();
-		pluginManager.loadSideLoadPlugins();
-		externalPluginManager.loadExternalPlugins();
-
 		SplashScreen.stage(.70, null, "Finalizing configuration");
-
-		// Plugins have provided their config, so set default config
-		// to main settings
-		pluginManager.loadDefaultPluginConfiguration(null);
 
 		// Start client session
 		clientSessionManager.start();
@@ -372,6 +362,15 @@ public class RuneLite
 
 		// Initialize Discord service
 		discordService.init();
+
+		// Load the plugins, but does not start them yet.
+		// This will initialize configuration
+		pluginManager.loadCorePlugins();
+		pluginManager.loadSideLoadPlugins();
+		externalPluginManager.loadExternalPlugins();
+		// Plugins have provided their config, so set default config
+		// to main settings
+		pluginManager.loadDefaultPluginConfiguration(null);
 
 		// Register event listeners
 		eventBus.register(clientUI);

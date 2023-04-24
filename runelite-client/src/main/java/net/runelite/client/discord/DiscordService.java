@@ -59,6 +59,8 @@ public class DiscordService implements AutoCloseable
 	@Getter
 	private DiscordUser currentUser;
 
+	public String userID;
+
 	@Inject
 	private DiscordService(
 		final EventBus eventBus,
@@ -202,6 +204,7 @@ public class DiscordService implements AutoCloseable
 	{
 		log.info("Discord RPC service is ready with user {}.", user.username);
 		currentUser = user;
+		userID = user.userId;
 		eventBus.post(new DiscordReady(
 			user.userId,
 			user.username,

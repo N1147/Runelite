@@ -30,6 +30,11 @@ package net.runelite.api;
 public interface NPCComposition extends ParamHolder
 {
 	/**
+	 * Gets the displayed overhead icon of the NPC.
+	 */
+	HeadIcon getOverheadIcon();
+
+	/**
 	 * Gets the name of the NPC.
 	 */
 	String getName();
