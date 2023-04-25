@@ -74,6 +74,7 @@ public class RuneLiteModule extends AbstractModule
 	private final File sessionfile;
 	private final File config;
 	private final String profile;
+	private final boolean insecureWriteCredentials;
 
 	@Override
 	protected void configure()
@@ -123,6 +124,8 @@ public class RuneLiteModule extends AbstractModule
 		bind(File.class).annotatedWith(Names.named("sessionfile")).toInstance(sessionfile);
 		bind(File.class).annotatedWith(Names.named("config")).toInstance(config);
 		bind(String.class).annotatedWith(Names.named("profile")).toProvider(Providers.of(profile));
+		bindConstant().annotatedWith(Names.named("insecureWriteCredentials")).to(insecureWriteCredentials);
+		bind(File.class).annotatedWith(Names.named("runeLiteDir")).toInstance(RuneLite.RUNELITE_DIR);
 		bind(ScheduledExecutorService.class).toInstance(new ExecutorServiceExceptionLogger(Executors.newSingleThreadScheduledExecutor()));
 		bind(OkHttpClient.class).toInstance(okHttpClient);
 		bind(MenuManager.class);

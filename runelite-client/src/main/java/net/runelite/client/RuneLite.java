@@ -106,7 +106,6 @@ public class RuneLite
 	public static final File SCREENSHOT_DIR = new File(RUNELITE_DIR, "screenshots");
 	public static final File LOGS_DIR = new File(RUNELITE_DIR, "logs");
 	public static final File DEFAULT_SESSION_FILE = new File(RUNELITE_DIR, "session");
-	public static final File DEFAULT_CONFIG_FILE = new File(RUNELITE_DIR, "settings.properties");
 
 	private static final int MAX_OKHTTP_CACHE_SIZE = 20 * 1024 * 1024; // 20mb
 	public static String USER_AGENT = "RuneLite/" + RuneLiteProperties.getVersion() + "-" + RuneLiteProperties.getCommit() + (RuneLiteProperties.isDirty() ? "+" : "");
@@ -183,11 +182,6 @@ public class RuneLite
 			.withValuesConvertedBy(new ConfigFileConverter())
 			.defaultsTo(DEFAULT_SESSION_FILE);
 
-		final ArgumentAcceptingOptionSpec<File> configfile = parser.accepts("config", "Use a specified config file (deprecated)")
-			.withRequiredArg()
-			.withValuesConvertedBy(new ConfigFileConverter())
-			.defaultsTo(DEFAULT_CONFIG_FILE);
-
 		final ArgumentAcceptingOptionSpec<ClientUpdateCheckMode> updateMode = parser
 			.accepts("rs", "Select client type")
 			.withRequiredArg()
@@ -243,11 +237,11 @@ public class RuneLite
 				ClassPreloader.preload();
 			}, "Preloader").start();
 
-			final boolean developerMode = true;
+			final boolean developerMode = options.has("developer-mode") && RuneLiteProperties.getLauncherVersion() == null;
 
 			if (developerMode)
 			{
-				boolean assertions = true;
+				boolean assertions = false;
 				assert assertions = true;
 				if (!assertions)
 				{
@@ -278,7 +272,6 @@ public class RuneLite
 				options.has("safe-mode"),
 				options.has("disable-telemetry"),
 				options.valueOf(sessionfile),
-				options.valueOf(configfile),
 				(String) options.valueOf("profile")
 			));
 
@@ -349,7 +342,17 @@ public class RuneLite
 		// Tell the plugin manager if client is outdated or not
 		pluginManager.setOutdated(isOutdated);
 
+		// Load the plugins, but does not start them yet.
+		// This will initialize configuration
+		pluginManager.loadCorePlugins();
+		pluginManager.loadSideLoadPlugins();
+		externalPluginManager.loadExternalPlugins();
+
 		SplashScreen.stage(.70, null, "Finalizing configuration");
+
+		// Plugins have provided their config, so set default config
+		// to main settings
+		pluginManager.loadDefaultPluginConfiguration(null);
 
 		// Start client session
 		clientSessionManager.start();
@@ -362,15 +365,6 @@ public class RuneLite
 
 		// Initialize Discord service
 		discordService.init();
-
-		// Load the plugins, but does not start them yet.
-		// This will initialize configuration
-		pluginManager.loadCorePlugins();
-		pluginManager.loadSideLoadPlugins();
-		externalPluginManager.loadExternalPlugins();
-		// Plugins have provided their config, so set default config
-		// to main settings
-		pluginManager.loadDefaultPluginConfiguration(null);
 
 		// Register event listeners
 		eventBus.register(clientUI);
