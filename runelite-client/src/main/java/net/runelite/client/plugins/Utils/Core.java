@@ -2573,6 +2573,10 @@ get all Inventory items
 		}
 	}
 
+	public void walkToMinimapTile(WorldPoint point) {
+		walking.walkToWorldPointUsingMinimap(point);
+	}
+
 	public void useWallObjectDirect(WallObject targetObject, long sleepDelay, int opcode)
 	{
 		if(targetObject!=null) {

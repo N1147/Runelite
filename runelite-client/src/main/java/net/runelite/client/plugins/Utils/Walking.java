@@ -55,6 +55,32 @@ public class Walking {
         return false;
     }
 
+    public void walkToWorldPointUsingMinimap(WorldPoint tileToWalk) {
+    /*    LocalPoint localPoint = LocalPoint.fromWorld(client, calc.getTileOnScreen(tileToWalk));
+        core.targetMenu = new NewMenuEntry("", "", 0, MenuAction.WALK,0 ,0, false);
+        core.moveClick(Perspective.localToCanvas(client, localPoint, client.getPlane()));
+
+     */
+        //Point localPoint = calc.tileToMinimap(tileToWalk);
+        //
+        //
+        //core.targetMenu = new NewMenuEntry("", "", 0, MenuAction.WALK, 0, 0, false);
+        if (calc.tileOnMap(tileToWalk)) {
+            Point p = calc.tileToMinimap(tileToWalk);
+            core.moveClick(p);
+            core.sendGameMessage("Walking to Point");
+            return;
+        } else {
+            WorldPoint loc = client.getLocalPlayer().getWorldLocation();
+            WorldPoint walk = new WorldPoint((loc.getX() + tileToWalk.getX()) / 2,
+                    (loc.getY() + tileToWalk.getY()) / 2, tileToWalk.getPlane());
+            Point p2 = calc.tileToMinimap(walk);
+            core.moveClick(p2);
+            core.sendGameMessage("Walking halfway to Point");
+            return;
+        }
+    }
+
     /**
     * Walks to a given in-game tile using the minimap
     * if not visible/available will walk half-way
