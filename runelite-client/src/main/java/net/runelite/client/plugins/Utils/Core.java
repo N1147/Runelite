@@ -174,6 +174,27 @@ public class Core extends Plugin
 		assert !client.isClientThread();
 		moveClick(point);
 	}
+	/*
+        Click point after moving mouse to point
+         */
+	public void handleMouseMove2(Rectangle rectangle) {
+		assert !client.isClientThread();
+		Point point = getClickPoint(rectangle);
+		if (client.isStretchedEnabled())
+		{
+			final Dimension stretched = client.getStretchedDimensions();
+			final Dimension real = client.getRealDimensions();
+			final double width = (stretched.width / real.getWidth());
+			final double height = (stretched.height / real.getHeight());
+			point = new Point((int) (point.getX() * width), (int) (point.getY() * height));
+		}
+		mouseEvent(MouseEvent.MOUSE_ENTERED, point, false);
+		mouseEvent(MouseEvent.MOUSE_EXITED, point, false);
+		mouseEvent(MouseEvent.MOUSE_MOVED, point, false);
+		mouseEvent(MouseEvent.MOUSE_PRESSED, point, false);
+		mouseEvent(MouseEvent.MOUSE_RELEASED, point, false);
+		mouseEvent(MouseEvent.MOUSE_CLICKED, point, false);
+	}
 
 	/*
 	Click point after moving mouse to point
@@ -192,10 +213,10 @@ public class Core extends Plugin
 
 //		mouseEvent(MouseEvent.MOUSE_ENTERED, point);
 //		mouseEvent(MouseEvent.MOUSE_EXITED, point);
-		mouseEvent(MouseEvent.MOUSE_MOVED, point);
-		mouseEvent(MouseEvent.MOUSE_PRESSED, point);
-		mouseEvent(MouseEvent.MOUSE_RELEASED, point);
-		mouseEvent(MouseEvent.MOUSE_CLICKED, point);
+		mouseEvent(MouseEvent.MOUSE_MOVED, point, false);
+		mouseEvent(MouseEvent.MOUSE_PRESSED, point, false);
+		mouseEvent(MouseEvent.MOUSE_RELEASED, point, false);
+		mouseEvent(MouseEvent.MOUSE_CLICKED, point, false);
 	}
 
 	/*
@@ -213,9 +234,9 @@ public class Core extends Plugin
 			point = new Point((int) (point.getX() * width), (int) (point.getY() * height));
 		}
 
-		mouseEvent(MouseEvent.MOUSE_ENTERED, point);
-		mouseEvent(MouseEvent.MOUSE_EXITED, point);
-		mouseEvent(MouseEvent.MOUSE_MOVED, point);
+		mouseEvent(MouseEvent.MOUSE_ENTERED, point, false);
+		mouseEvent(MouseEvent.MOUSE_EXITED, point, false);
+		mouseEvent(MouseEvent.MOUSE_MOVED, point, false);
 	}
 
 
@@ -235,7 +256,7 @@ public class Core extends Plugin
 		}
 
 		Point point = getClickPoint(rectangle);
-		handleMouseMove(rectangle);
+		handleMouseMove2(rectangle);
 		//moveClick(point);
 	}
 	/*
@@ -2097,9 +2118,9 @@ get all Inventory items
 			final double height = (stretched.height / real.getHeight());
 			point = new Point((int) (point.getX() * width), (int) (point.getY() * height));
 		}
-		mouseEvent(MouseEvent.MOUSE_PRESSED, point);
-		mouseEvent(MouseEvent.MOUSE_RELEASED, point);
-		mouseEvent(MouseEvent.MOUSE_CLICKED, point);
+		mouseEvent(MouseEvent.MOUSE_PRESSED, point, false);
+		mouseEvent(MouseEvent.MOUSE_RELEASED, point, false);
+		mouseEvent(MouseEvent.MOUSE_CLICKED, point, false);
 	}
 
 	public void moveClick(Rectangle rectangle)
@@ -2124,10 +2145,10 @@ get all Inventory items
 		}
 		//mouseEvent(MouseEvent.MOUSE_ENTERED, point);
 		//mouseEvent(MouseEvent.MOUSE_EXITED, point);
-		mouseEvent(MouseEvent.MOUSE_MOVED, point);
-		mouseEvent(MouseEvent.MOUSE_PRESSED, point);
-		mouseEvent(MouseEvent.MOUSE_RELEASED, point);
-		mouseEvent(MouseEvent.MOUSE_CLICKED, point);
+		mouseEvent(MouseEvent.MOUSE_MOVED, point, false);
+		mouseEvent(MouseEvent.MOUSE_PRESSED, point, false);
+		mouseEvent(MouseEvent.MOUSE_RELEASED, point, false);
+		mouseEvent(MouseEvent.MOUSE_CLICKED, point, false);
 	}
 
 	public Point getClickPoint(Rectangle rect)
@@ -2158,9 +2179,9 @@ get all Inventory items
 			final double height = (stretched.height / real.getHeight());
 			point = new Point((int) (point.getX() * width), (int) (point.getY() * height));
 		}
-		mouseEvent(MouseEvent.MOUSE_ENTERED, point);
-		mouseEvent(MouseEvent.MOUSE_EXITED, point);
-		mouseEvent(MouseEvent.MOUSE_MOVED, point);
+		mouseEvent(MouseEvent.MOUSE_ENTERED, point, false);
+		mouseEvent(MouseEvent.MOUSE_EXITED, point, false);
+		mouseEvent(MouseEvent.MOUSE_MOVED, point, false);
 	}
 
 	public int getRandomIntBetweenRange(int min, int max)
@@ -2169,13 +2190,14 @@ get all Inventory items
 		return ThreadLocalRandom.current().nextInt(min, max + 1);
 	}
 
-	private void mouseEvent(int id, Point point)
+
+	private void mouseEvent(int id, Point point, boolean rightClick)
 	{
 		MouseEvent e = new MouseEvent(
 				client.getCanvas(), id,
 				System.currentTimeMillis(),
 				0, point.getX(), point.getY(),
-				1, false, 1
+				1, rightClick, 1
 		);
 
 		client.getCanvas().dispatchEvent(e);
@@ -2901,7 +2923,7 @@ get all Inventory items
 	private void setSelectSpell(WidgetInfo info)
 	{
 		final Widget widget = client.getWidget(info);
-		handleMouseMove(widget.getBounds());
+		handleMouseMove2(widget.getBounds());
 	}
 
 	public void setMenuEntry(MenuEntry menuEntry)

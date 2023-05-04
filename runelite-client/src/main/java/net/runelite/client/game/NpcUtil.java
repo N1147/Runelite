@@ -127,7 +127,7 @@ public class NpcUtil
 			case NpcID.GADDERANKS_4484:
 			case NpcID.WALL_BEAST:
 			case NpcID.RUNITE_GOLEM:
-			case NpcID.RUNITE_ROCKS:
+			//case NpcID.RUNITE_ROCKS:
 			case NpcID.STRANGE_CREATURE_12076: // Secrets of the North transitioning to Jhallan
 				return false;
 			// These NPCs have no attack options, but are the dead and uninteractable form of otherwise attackable NPCs,

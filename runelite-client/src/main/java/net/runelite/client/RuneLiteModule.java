@@ -72,7 +72,6 @@ public class RuneLiteModule extends AbstractModule
 	private final boolean safeMode;
 	private final boolean disableTelemetry;
 	private final File sessionfile;
-	private final File config;
 	private final String profile;
 	private final boolean insecureWriteCredentials;
 
@@ -122,7 +121,6 @@ public class RuneLiteModule extends AbstractModule
 		bindConstant().annotatedWith(Names.named("safeMode")).to(safeMode);
 		bindConstant().annotatedWith(Names.named("disableTelemetry")).to(disableTelemetry);
 		bind(File.class).annotatedWith(Names.named("sessionfile")).toInstance(sessionfile);
-		bind(File.class).annotatedWith(Names.named("config")).toInstance(config);
 		bind(String.class).annotatedWith(Names.named("profile")).toProvider(Providers.of(profile));
 		bindConstant().annotatedWith(Names.named("insecureWriteCredentials")).to(insecureWriteCredentials);
 		bind(File.class).annotatedWith(Names.named("runeLiteDir")).toInstance(RuneLite.RUNELITE_DIR);
@@ -140,11 +138,11 @@ public class RuneLiteModule extends AbstractModule
 		bind(Callbacks.class).to(Hooks.class);
 
 		bind(EventBus.class)
-			.toInstance(new EventBus());
+				.toInstance(new EventBus());
 
 		bind(EventBus.class)
-			.annotatedWith(Names.named("Deferred EventBus"))
-			.to(DeferredEventBus.class);
+				.annotatedWith(Names.named("Deferred EventBus"))
+				.to(DeferredEventBus.class);
 	}
 
 	@Provides
@@ -217,9 +215,9 @@ public class RuneLiteModule extends AbstractModule
 	@Provides
 	@Singleton
 	TelemetryClient provideTelemetry(
-		OkHttpClient okHttpClient,
-		Gson gson,
-		@Named("runelite.api.base") HttpUrl apiBase)
+			OkHttpClient okHttpClient,
+			Gson gson,
+			@Named("runelite.api.base") HttpUrl apiBase)
 	{
 		return disableTelemetry ? null : new TelemetryClient(okHttpClient, gson, apiBase);
 	}

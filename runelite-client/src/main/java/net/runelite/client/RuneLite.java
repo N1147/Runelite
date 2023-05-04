@@ -62,11 +62,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.SwingUtilities;
-import joptsimple.ArgumentAcceptingOptionSpec;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import joptsimple.ValueConversionException;
-import joptsimple.ValueConverter;
+
+import joptsimple.*;
 import joptsimple.util.EnumConverter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -198,7 +195,7 @@ public class RuneLite
 
 		parser.accepts("help", "Show this text").forHelp();
 		OptionSet options = parser.parse(args);
-
+		final OptionSpec<Void> insecureWriteCredentials = parser.accepts("insecure-write-credentials", "Dump authentication tokens from the Jagex Launcher to a text file to be used for development");
 		if (options.has("help"))
 		{
 			parser.printHelpOn(System.out);
@@ -265,14 +262,15 @@ public class RuneLite
 
 			final long start = System.currentTimeMillis();
 			injector = Guice.createInjector(new RuneLiteModule(
-				okHttpClient,
-				clientLoader,
-				runtimeConfigLoader,
-				developerMode,
-				options.has("safe-mode"),
-				options.has("disable-telemetry"),
-				options.valueOf(sessionfile),
-				(String) options.valueOf("profile")
+					okHttpClient,
+					clientLoader,
+					runtimeConfigLoader,
+					developerMode,
+					options.has("safe-mode"),
+					options.has("disable-telemetry"),
+					options.valueOf(sessionfile),
+					(String) options.valueOf("profile"),
+					options.has(insecureWriteCredentials)
 			));
 
 			injector.getInstance(RuneLite.class).start();

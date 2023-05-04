@@ -277,10 +277,6 @@ public class PluginManager
 
 	public void loadSideLoadPlugins()
 	{
-		if (!developerMode)
-		{
-			return;
-		}
 
 		File[] files = SIDELOADED_PLUGINS.listFiles();
 		if (files == null)
@@ -340,11 +336,6 @@ public class PluginManager
 			}
 
 			if (!pluginDescriptor.loadWhenOutdated() && isOutdated)
-			{
-				continue;
-			}
-
-			if (pluginDescriptor.developerPlugin() && !developerMode)
 			{
 				continue;
 			}

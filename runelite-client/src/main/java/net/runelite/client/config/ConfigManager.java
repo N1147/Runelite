@@ -107,7 +107,6 @@ public class ConfigManager
 	private static final int KEY_SPLITTER_PROFILE = 1;
 	private static final int KEY_SPLITTER_KEY = 2;
 
-	private final File configFile;
 	@Nullable
 	private final String configProfileName;
 	private final EventBus eventBus;
@@ -133,18 +132,16 @@ public class ConfigManager
 
 	@Inject
 	private ConfigManager(
-		@Named("config") File config,
-		@Nullable @Named("profile") String profile,
-		ScheduledExecutorService scheduledExecutorService,
-		EventBus eventBus,
-		@Nullable Client client,
-		Gson gson,
-		@Nonnull ConfigClient configClient,
-		ProfileManager profileManager,
-		SessionManager sessionManager
+			@Nullable @Named("profile") String profile,
+			ScheduledExecutorService scheduledExecutorService,
+			EventBus eventBus,
+			@Nullable Client client,
+			Gson gson,
+			@Nonnull ConfigClient configClient,
+			ProfileManager profileManager,
+			SessionManager sessionManager
 	)
 	{
-		this.configFile = config;
 		this.configProfileName = profile;
 		this.eventBus = eventBus;
 		this.client = client;
@@ -345,33 +342,19 @@ public class ConfigManager
 
 	private void migrate()
 	{
-		boolean defaultSettings = RuneLite.DEFAULT_CONFIG_FILE.equals(configFile);
-		if (!defaultSettings)
-		{
-			log.warn("Use of --config is deprecated, use --profile instead.");
-		}
-
 		try (ProfileManager.Lock lock = profileManager.lock())
 		{
 			List<ConfigProfile> profiles = lock.getProfiles();
-			String configProfileName = profileNameFromFile(configFile);
-			// migrate if:
-			// profiles does not exist and config is default
-			// config is non-default and a profile with the config name doesn't exist
-			// this is to avoid importing default config if the default profile is removed or renamed.
-			if (defaultSettings ? profiles.isEmpty() : lock.findProfile(configProfileName) == null
-				&& configFile.exists())
+			File configFile = new File(RuneLite.RUNELITE_DIR, "settings.properties");
+			if (profiles.isEmpty() && configFile.exists())
 			{
-				String targetProfileName = defaultSettings ? "default" : configProfileName;
+				String targetProfileName = "default";
 
 				log.info("Performing migration of config from {} to profile '{}'", configFile.getName(), targetProfileName);
 
 				ConfigProfile targetProfile = lock.createProfile(targetProfileName);
-				if (defaultSettings)
-				{
-					profiles.forEach(p -> p.setActive(false));
-					targetProfile.setActive(true);
-				}
+				profiles.forEach(p -> p.setActive(false));
+				targetProfile.setActive(true);
 
 				if (rsProfile == null)
 				{
@@ -479,17 +462,6 @@ public class ConfigManager
 		log.info("Finished importing {} keys", keys);
 	}
 
-	private static String profileNameFromFile(File file)
-	{
-		String configProfileName = file.getName();
-		int idx = configProfileName.lastIndexOf('.');
-		if (idx > -1)
-		{
-			configProfileName = configProfileName.substring(0, idx);
-		}
-		return configProfileName;
-	}
-
 	public void load()
 	{
 		AccountSession session = sessionManager.getAccountSession();
@@ -540,16 +512,6 @@ public class ConfigManager
 						profile = p;
 					}
 				}
-				// --config
-				else if (!RuneLite.DEFAULT_CONFIG_FILE.equals(configFile))
-				{
-					// find a profile matching the name of the file
-					String configProfileName = profileNameFromFile(configFile);
-					if (p.getName().equals(configProfileName))
-					{
-						profile = p;
-					}
-				}
 				else if (p.isActive())
 				{
 					profile = p;
@@ -566,12 +528,6 @@ public class ConfigManager
 			}
 			else
 			{
-				if (!RuneLite.DEFAULT_CONFIG_FILE.equals(configFile))
-				{
-					// --config not matching an existing profile. Refuse to make a new profile.
-					throw new RuntimeException("--config is deprecated and is supported for migrating existing configuration, but can't be used to create new profiles. Use --profile instead.");
-				}
-
 				profile = lock.createProfile(configProfileName != null ? configProfileName : "default");
 				if (configProfileName == null)
 				{
@@ -670,9 +626,9 @@ public class ConfigManager
 
 		long id = profile.getId();
 		Profile remoteProfile = remoteProfiles.stream()
-			.filter(p -> p.getId() == id)
-			.findFirst()
-			.orElse(null);
+				.filter(p -> p.getId() == id)
+				.findFirst()
+				.orElse(null);
 
 		if (remoteProfile == null)
 		{
@@ -728,9 +684,9 @@ public class ConfigManager
 		}
 
 		T t = (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[]
-			{
-				clazz
-			}, handler);
+				{
+						clazz
+				}, handler);
 
 		return t;
 	}
@@ -738,8 +694,8 @@ public class ConfigManager
 	public List<String> getConfigurationKeys(String prefix)
 	{
 		return configProfile.keySet().stream()
-			.filter(k -> k.startsWith(prefix))
-			.collect(Collectors.toList());
+				.filter(k -> k.startsWith(prefix))
+				.collect(Collectors.toList());
 	}
 
 	public List<String> getRSProfileConfigurationKeys(String group, String profile, String keyPrefix)
@@ -753,9 +709,9 @@ public class ConfigManager
 
 		String prefix = group + "." + profile + "." + keyPrefix;
 		return rsProfileConfigProfile.keySet().stream()
-			.filter(k -> k.startsWith(prefix))
-			.map(k -> splitKey(k)[KEY_SPLITTER_KEY])
-			.collect(Collectors.toList());
+				.filter(k -> k.startsWith(prefix))
+				.map(k -> splitKey(k)[KEY_SPLITTER_KEY])
+				.collect(Collectors.toList());
 	}
 
 	public static String getWholeKey(String groupName, String profile, String key)
@@ -998,43 +954,43 @@ public class ConfigManager
 		}
 
 		final List<ConfigSectionDescriptor> sections = Arrays.stream(inter.getDeclaredFields())
-			.filter(m -> m.isAnnotationPresent(ConfigSection.class) && m.getType() == String.class)
-			.map(m ->
-			{
-				try
+				.filter(m -> m.isAnnotationPresent(ConfigSection.class) && m.getType() == String.class)
+				.map(m ->
 				{
-					return new ConfigSectionDescriptor(
-						String.valueOf(m.get(inter)),
-						m.getDeclaredAnnotation(ConfigSection.class)
-					);
-				}
-				catch (IllegalAccessException e)
-				{
-					log.warn("Unable to load section {}::{}", inter.getSimpleName(), m.getName());
-					return null;
-				}
-			})
-			.filter(Objects::nonNull)
-			.sorted((a, b) -> ComparisonChain.start()
-				.compare(a.getSection().position(), b.getSection().position())
-				.compare(a.getSection().name(), b.getSection().name())
-				.result())
-			.collect(Collectors.toList());
+					try
+					{
+						return new ConfigSectionDescriptor(
+								String.valueOf(m.get(inter)),
+								m.getDeclaredAnnotation(ConfigSection.class)
+						);
+					}
+					catch (IllegalAccessException e)
+					{
+						log.warn("Unable to load section {}::{}", inter.getSimpleName(), m.getName());
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.sorted((a, b) -> ComparisonChain.start()
+						.compare(a.getSection().position(), b.getSection().position())
+						.compare(a.getSection().name(), b.getSection().name())
+						.result())
+				.collect(Collectors.toList());
 
 		final List<ConfigItemDescriptor> items = Arrays.stream(inter.getMethods())
-			.filter(m -> m.getParameterCount() == 0 && m.isAnnotationPresent(ConfigItem.class))
-			.map(m -> new ConfigItemDescriptor(
-				m.getDeclaredAnnotation(ConfigItem.class),
-				m.getGenericReturnType(),
-				m.getDeclaredAnnotation(Range.class),
-				m.getDeclaredAnnotation(Alpha.class),
-				m.getDeclaredAnnotation(Units.class)
-			))
-			.sorted((a, b) -> ComparisonChain.start()
-				.compare(a.getItem().position(), b.getItem().position())
-				.compare(a.getItem().name(), b.getItem().name())
-				.result())
-			.collect(Collectors.toList());
+				.filter(m -> m.getParameterCount() == 0 && m.isAnnotationPresent(ConfigItem.class))
+				.map(m -> new ConfigItemDescriptor(
+						m.getDeclaredAnnotation(ConfigItem.class),
+						m.getGenericReturnType(),
+						m.getDeclaredAnnotation(Range.class),
+						m.getDeclaredAnnotation(Alpha.class),
+						m.getDeclaredAnnotation(Units.class)
+				))
+				.sorted((a, b) -> ComparisonChain.start()
+						.compare(a.getItem().position(), b.getItem().position())
+						.compare(a.getItem().name(), b.getItem().name())
+						.result())
+				.collect(Collectors.toList());
 
 		return new ConfigDescriptor(group, sections, items);
 	}
@@ -1263,8 +1219,8 @@ public class ConfigManager
 	}
 
 	@Subscribe(
-		// run after plugins, in the event they save config on shutdown
-		priority = -100
+			// run after plugins, in the event they save config on shutdown
+			priority = -100
 	)
 	private void onClientShutdown(ClientShutdown e)
 	{
@@ -1402,20 +1358,20 @@ public class ConfigManager
 		}
 
 		return profileKeys.stream()
-			.map(key ->
-			{
-				Long accid = getConfiguration(RSPROFILE_GROUP, key, RSPROFILE_ACCOUNT_HASH, long.class);
-				RuneScapeProfile prof = new RuneScapeProfile(
-					getConfiguration(RSPROFILE_GROUP, key, RSPROFILE_DISPLAY_NAME),
-					getConfiguration(RSPROFILE_GROUP, key, RSPROFILE_TYPE, RuneScapeProfileType.class),
-					accid == null ? RuneScapeProfile.ACCOUNT_HASH_INVALID : accid,
-					key
-				);
+				.map(key ->
+				{
+					Long accid = getConfiguration(RSPROFILE_GROUP, key, RSPROFILE_ACCOUNT_HASH, long.class);
+					RuneScapeProfile prof = new RuneScapeProfile(
+							getConfiguration(RSPROFILE_GROUP, key, RSPROFILE_DISPLAY_NAME),
+							getConfiguration(RSPROFILE_GROUP, key, RSPROFILE_TYPE, RuneScapeProfileType.class),
+							accid == null ? RuneScapeProfile.ACCOUNT_HASH_INVALID : accid,
+							key
+					);
 
-				return prof;
-			})
-			.sorted(Comparator.comparing(RuneScapeProfile::getKey))
-			.collect(Collectors.toCollection(ArrayList::new));
+					return prof;
+				})
+				.sorted(Comparator.comparing(RuneScapeProfile::getKey))
+				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private synchronized RuneScapeProfile findRSProfile(List<RuneScapeProfile> profiles, long accountHash, RuneScapeProfileType type, String displayName, boolean create)
@@ -1426,8 +1382,8 @@ public class ConfigManager
 		}
 
 		List<RuneScapeProfile> matches = profiles.stream()
-			.filter(p -> p.getType() == type && accountHash == p.getAccountHash())
-			.collect(Collectors.toList());
+				.filter(p -> p.getType() == type && accountHash == p.getAccountHash())
+				.collect(Collectors.toList());
 
 		if (matches.size() > 1)
 		{
@@ -1447,12 +1403,12 @@ public class ConfigManager
 		// generate the new key deterministically so if you "create" the same profile on 2 different clients it doesn't duplicate
 		Set<String> keys = profiles.stream().map(RuneScapeProfile::getKey).collect(Collectors.toSet());
 		byte[] key = {
-			(byte) accountHash,
-			(byte) (accountHash >> 8),
-			(byte) (accountHash >> 16),
-			(byte) (accountHash >> 24),
-			(byte) (accountHash >> 32),
-			(byte) (accountHash >> 40),
+				(byte) accountHash,
+				(byte) (accountHash >> 8),
+				(byte) (accountHash >> 16),
+				(byte) (accountHash >> 24),
+				(byte) (accountHash >> 32),
+				(byte) (accountHash >> 40),
 		};
 		key[0] += type.ordinal();
 		for (int i = 0; i < 0xFF; i++, key[1]++)
