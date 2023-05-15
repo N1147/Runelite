@@ -10,7 +10,6 @@ import net.runelite.api.Client;
 import net.runelite.api.Point;
 import net.runelite.api.Prayer;
 import net.runelite.api.VarClientInt;
-import net.runelite.api.vars.InterfaceTab;
 import net.runelite.api.widgets.Widget;
 import static net.runelite.client.ui.overlay.OverlayUtil.renderPolygon;
 
@@ -20,7 +19,7 @@ public class OverlayUtil
 	{
 		Widget widget = client.getWidget(prayer.getWidgetInfo());
 
-		if (widget == null || client.getVar(VarClientInt.INVENTORY_TAB) != InterfaceTab.PRAYER.getId())
+		if (widget == null || widget.isHidden())
 		{
 			return null;
 		}
