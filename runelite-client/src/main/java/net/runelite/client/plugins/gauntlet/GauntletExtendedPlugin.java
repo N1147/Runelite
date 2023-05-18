@@ -81,7 +81,6 @@ import net.runelite.client.plugins.gauntlet.overlay.OverlayGauntlet;
 import net.runelite.client.plugins.gauntlet.overlay.OverlayHunllef;
 import net.runelite.client.plugins.gauntlet.overlay.OverlayPrayerBox;
 import net.runelite.client.plugins.gauntlet.overlay.OverlayPrayerWidget;
-import net.runelite.client.plugins.gauntlet.overlay.OverlayTimer;
 import net.runelite.client.plugins.gauntlet.resource.ResourceManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 
@@ -205,9 +204,6 @@ public class GauntletExtendedPlugin extends Plugin
 	private OverlayManager overlayManager;
 
 	@Inject
-	private OverlayTimer overlayTimer;
-
-	@Inject
 	private OverlayGauntlet overlayGauntlet;
 
 	@Inject
@@ -269,7 +265,7 @@ public class GauntletExtendedPlugin extends Plugin
 	{
 		if (overlays == null)
 		{
-			overlays = Set.of(overlayTimer, overlayGauntlet, overlayHunllef, overlayPrayerWidget, overlayPrayerBox);
+			overlays = Set.of(overlayGauntlet, overlayHunllef, overlayPrayerWidget, overlayPrayerBox);
 		}
 
 		if (client.getGameState() == GameState.LOGGED_IN)
@@ -291,7 +287,7 @@ public class GauntletExtendedPlugin extends Plugin
 		wrongAttackStyle = false;
 		switchWeapon = false;
 
-		overlayTimer.reset();
+		//overlayTimer.reset();
 		resourceManager.reset();
 
 		entitySets.forEach(Set::clear);
@@ -416,7 +412,7 @@ public class GauntletExtendedPlugin extends Plugin
 	{
 		if (event.getGroupId() == WidgetID.GAUNTLET_TIMER_GROUP_ID)
 		{
-			overlayTimer.setGauntletStart();
+			//overlayTimer.setGauntletStart();
 			resourceManager.init();
 		}
 	}
@@ -559,7 +555,7 @@ public class GauntletExtendedPlugin extends Plugin
 			return;
 		}
 
-		overlayTimer.onPlayerDeath();
+		//overlayTimer.onPlayerDeath();
 	}
 
 	@Subscribe
@@ -645,7 +641,7 @@ public class GauntletExtendedPlugin extends Plugin
 	{
 		if (isGauntletVarbitSet())
 		{
-			overlayTimer.setGauntletStart();
+			//overlayTimer.setGauntletStart();
 			resourceManager.init();
 			addSpawnedEntities();
 			initGauntlet();
@@ -677,7 +673,7 @@ public class GauntletExtendedPlugin extends Plugin
 	{
 		inGauntlet = true;
 
-		overlayManager.add(overlayTimer);
+		//overlayManager.add(overlayTimer);
 		overlayManager.add(overlayGauntlet);
 	}
 
@@ -685,7 +681,7 @@ public class GauntletExtendedPlugin extends Plugin
 	{
 		inHunllef = true;
 
-		overlayTimer.setHunllefStart();
+		//overlayTimer.setHunllefStart();
 		resourceManager.reset();
 
 		overlayManager.remove(overlayGauntlet);
