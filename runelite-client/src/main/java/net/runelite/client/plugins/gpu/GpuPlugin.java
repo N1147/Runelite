@@ -69,10 +69,9 @@ import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.DrawManager;
 import net.runelite.client.util.OSType;
 import net.runelite.rlawt.AWTContext;
-import org.jocl.CL;
-import static org.jocl.CL.CL_MEM_READ_ONLY;
-import static org.jocl.CL.CL_MEM_WRITE_ONLY;
-import static org.jocl.CL.clCreateFromGLBuffer;
+import org.lwjgl.opencl.CL10;
+import org.lwjgl.opencl.CL10GL;
+import org.lwjgl.opencl.CL12;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.opengl.GLCapabilities;
@@ -268,6 +267,11 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 
 	private boolean lwjglInitted = false;
 
+	private int sceneId;
+	private int nextSceneId;
+	private GpuIntBuffer nextSceneVertexBuffer;
+	private GpuFloatBuffer nextSceneTexBuffer;
+
 	@Override
 	protected void startUp()
 	{
@@ -389,7 +393,9 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 
 				if (client.getGameState() == GameState.LOGGED_IN)
 				{
-					uploadScene();
+					Scene scene = client.getScene();
+					loadScene(scene);
+					swapScene(scene);
 				}
 
 				checkGLErrors();
@@ -430,8 +436,6 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 
 			if (lwjglInitted)
 			{
-				openCLManager.cleanup();
-
 				if (textureArrayId != -1)
 				{
 					textureManager.freeTextureArray(textureArrayId);
@@ -445,6 +449,9 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 				shutdownVao();
 				shutdownBuffers();
 				shutdownAAFbo();
+
+				// this must shutdown after the clgl buffers are freed
+				openCLManager.cleanup();
 			}
 
 			if (awtContext != null)
@@ -731,10 +738,10 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 		}
 		glBuffer.size = -1;
 
-		if (glBuffer.cl_mem != null)
+		if (glBuffer.clBuffer != -1)
 		{
-			CL.clReleaseMemObject(glBuffer.cl_mem);
-			glBuffer.cl_mem = null;
+			CL12.clReleaseMemObject(glBuffer.clBuffer);
+			glBuffer.clBuffer = -1;
 		}
 	}
 
@@ -773,7 +780,7 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 		}
 		uniformBuf.flip();
 
-		updateBuffer(uniformBuffer, GL43C.GL_UNIFORM_BUFFER, uniformBuf, GL43C.GL_DYNAMIC_DRAW, CL_MEM_READ_ONLY);
+		updateBuffer(uniformBuffer, GL43C.GL_UNIFORM_BUFFER, uniformBuf, GL43C.GL_DYNAMIC_DRAW, CL12.CL_MEM_READ_ONLY);
 		GL43C.glBindBuffer(GL43C.GL_UNIFORM_BUFFER, 0);
 	}
 
@@ -900,25 +907,25 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 		IntBuffer modelBufferUnordered = this.modelBufferUnordered.getBuffer();
 
 		// temp buffers
-		updateBuffer(tmpVertexBuffer, GL43C.GL_ARRAY_BUFFER, vertexBuffer, GL43C.GL_DYNAMIC_DRAW, CL_MEM_READ_ONLY);
-		updateBuffer(tmpUvBuffer, GL43C.GL_ARRAY_BUFFER, uvBuffer, GL43C.GL_DYNAMIC_DRAW, CL_MEM_READ_ONLY);
+		updateBuffer(tmpVertexBuffer, GL43C.GL_ARRAY_BUFFER, vertexBuffer, GL43C.GL_DYNAMIC_DRAW, CL12.CL_MEM_READ_ONLY);
+		updateBuffer(tmpUvBuffer, GL43C.GL_ARRAY_BUFFER, uvBuffer, GL43C.GL_DYNAMIC_DRAW, CL12.CL_MEM_READ_ONLY);
 
 		// model buffers
-		updateBuffer(tmpModelBufferLarge, GL43C.GL_ARRAY_BUFFER, modelBuffer, GL43C.GL_DYNAMIC_DRAW, CL_MEM_READ_ONLY);
-		updateBuffer(tmpModelBufferSmall, GL43C.GL_ARRAY_BUFFER, modelBufferSmall, GL43C.GL_DYNAMIC_DRAW, CL_MEM_READ_ONLY);
-		updateBuffer(tmpModelBufferUnordered, GL43C.GL_ARRAY_BUFFER, modelBufferUnordered, GL43C.GL_DYNAMIC_DRAW, CL_MEM_READ_ONLY);
+		updateBuffer(tmpModelBufferLarge, GL43C.GL_ARRAY_BUFFER, modelBuffer, GL43C.GL_DYNAMIC_DRAW, CL12.CL_MEM_READ_ONLY);
+		updateBuffer(tmpModelBufferSmall, GL43C.GL_ARRAY_BUFFER, modelBufferSmall, GL43C.GL_DYNAMIC_DRAW, CL12.CL_MEM_READ_ONLY);
+		updateBuffer(tmpModelBufferUnordered, GL43C.GL_ARRAY_BUFFER, modelBufferUnordered, GL43C.GL_DYNAMIC_DRAW, CL12.CL_MEM_READ_ONLY);
 
 		// Output buffers
 		updateBuffer(tmpOutBuffer,
 			GL43C.GL_ARRAY_BUFFER,
 			targetBufferOffset * 16, // each element is an ivec4, which is 16 bytes
 			GL43C.GL_STREAM_DRAW,
-			CL_MEM_WRITE_ONLY);
+			CL12.CL_MEM_WRITE_ONLY);
 		updateBuffer(tmpOutUvBuffer,
 			GL43C.GL_ARRAY_BUFFER,
 			targetBufferOffset * 16, // each element is a vec4, which is 16 bytes
 			GL43C.GL_STREAM_DRAW,
-			CL_MEM_WRITE_ONLY);
+			CL12.CL_MEM_WRITE_ONLY);
 
 		if (computeMode == ComputeMode.OPENCL)
 		{
@@ -997,7 +1004,7 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 	{
 		if (computeMode == ComputeMode.NONE)
 		{
-			targetBufferOffset += sceneUploader.upload(paint,
+			targetBufferOffset += sceneUploader.upload(client.getScene(), paint,
 				tileZ, tileX, tileY,
 				vertexBuffer, uvBuffer,
 				tileX << Perspective.LOCAL_COORD_BITS,
@@ -1442,41 +1449,49 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
-		switch (gameStateChanged.getGameState())
+		if (gameStateChanged.getGameState() == GameState.LOGIN_SCREEN)
 		{
-			case LOGGED_IN:
-				if (computeMode != ComputeMode.NONE)
-				{
-					this.uploadScene();
-					checkGLErrors();
-				}
-				break;
-			case LOGIN_SCREEN:
-				// Avoid drawing the last frame's buffer during LOADING after LOGIN_SCREEN
-				targetBufferOffset = 0;
+			// Avoid drawing the last frame's buffer during LOADING after LOGIN_SCREEN
+			targetBufferOffset = 0;
 		}
 	}
 
-	private void uploadScene()
+	@Override
+	public void loadScene(Scene scene)
 	{
-		vertexBuffer.clear();
-		uvBuffer.clear();
+		if (computeMode == ComputeMode.NONE)
+		{
+			return;
+		}
 
-		sceneUploader.upload(client.getScene(), vertexBuffer, uvBuffer);
+		GpuIntBuffer vertexBuffer = new GpuIntBuffer();
+		GpuFloatBuffer uvBuffer = new GpuFloatBuffer();
+
+		sceneUploader.upload(scene, vertexBuffer, uvBuffer);
 
 		vertexBuffer.flip();
 		uvBuffer.flip();
 
-		IntBuffer vertexBuffer = this.vertexBuffer.getBuffer();
-		FloatBuffer uvBuffer = this.uvBuffer.getBuffer();
+		nextSceneVertexBuffer = vertexBuffer;
+		nextSceneTexBuffer = uvBuffer;
+		nextSceneId = sceneUploader.sceneId;
+	}
 
-		updateBuffer(sceneVertexBuffer, GL43C.GL_ARRAY_BUFFER, vertexBuffer, GL43C.GL_STATIC_COPY, CL_MEM_READ_ONLY);
-		updateBuffer(sceneUvBuffer, GL43C.GL_ARRAY_BUFFER, uvBuffer, GL43C.GL_STATIC_COPY, CL_MEM_READ_ONLY);
+	@Override
+	public void swapScene(Scene scene)
+	{
+		if (computeMode == ComputeMode.NONE)
+		{
+			return;
+		}
 
-		GL43C.glBindBuffer(GL43C.GL_ARRAY_BUFFER, 0);
+		sceneId = nextSceneId;
+		updateBuffer(sceneVertexBuffer, GL43C.GL_ARRAY_BUFFER, nextSceneVertexBuffer.getBuffer(), GL43C.GL_STATIC_COPY, CL12.CL_MEM_READ_ONLY);
+		updateBuffer(sceneUvBuffer, GL43C.GL_ARRAY_BUFFER, nextSceneTexBuffer.getBuffer(), GL43C.GL_STATIC_COPY, CL12.CL_MEM_READ_ONLY);
 
-		vertexBuffer.clear();
-		uvBuffer.clear();
+		nextSceneVertexBuffer = null;
+		nextSceneTexBuffer = null;
+		nextSceneId = -1;
 	}
 
 	/**
@@ -1569,7 +1584,7 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 			}
 		}
 		// Model may be in the scene buffer
-		else if (renderable instanceof Model && ((Model) renderable).getSceneId() == sceneUploader.sceneId)
+		else if (renderable instanceof Model && ((Model) renderable).getSceneId() == sceneId)
 		{
 			Model model = (Model) renderable;
 
@@ -1747,17 +1762,17 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 	{
 		if (computeMode == ComputeMode.OPENCL)
 		{
-			if (glBuffer.cl_mem != null)
+			if (glBuffer.clBuffer != -1)
 			{
-				CL.clReleaseMemObject(glBuffer.cl_mem);
+				CL10.clReleaseMemObject(glBuffer.clBuffer);
 			}
 			if (glBuffer.size == 0)
 			{
-				glBuffer.cl_mem = null;
+				glBuffer.clBuffer = -1;
 			}
 			else
 			{
-				glBuffer.cl_mem = clCreateFromGLBuffer(openCLManager.context, clFlags, glBuffer.glBufferId, null);
+				glBuffer.clBuffer = CL10GL.clCreateFromGLBuffer(openCLManager.context, clFlags, glBuffer.glBufferId, (int[]) null);
 			}
 		}
 	}
