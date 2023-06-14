@@ -1517,7 +1517,6 @@ get all Inventory items
 		return getAllInventoryItems().stream().filter(wi -> ids.stream().anyMatch(i -> i == wi.getId())).findFirst().orElse(null);
 	}
 
-
 	public Item getInventoryItemExcept(List<Integer> exceptIDs)
 	{
 		exceptIDs.add(-1); //empty inventory slot

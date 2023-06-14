@@ -196,7 +196,11 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 	public void keyTyped(KeyEvent e)
 	{
 	}
+	@Override
+	public void keyReleased(KeyEvent e)
+	{
 
+	}
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
@@ -247,11 +251,7 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 		}
 	}
 
-	@Override
-	public void keyReleased(KeyEvent e)
-	{
 
-	}
 
 	private void overrideLoginScreen()
 	{

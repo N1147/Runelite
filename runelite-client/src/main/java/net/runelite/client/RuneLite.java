@@ -36,6 +36,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -192,6 +194,9 @@ public class RuneLite
 					return super.convert(v.toUpperCase());
 				}
 			});
+		final ArgumentAcceptingOptionSpec<String> proxyInfo = parser
+				.accepts("proxy")
+				.withRequiredArg().ofType(String.class);
 
 		parser.accepts("help", "Show this text").forHelp();
 		OptionSet options = parser.parse(args);
@@ -206,6 +211,36 @@ public class RuneLite
 		{
 			final Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 			logger.setLevel(Level.DEBUG);
+		}
+
+		if (options.has("proxy"))
+		{
+			String[] proxy = options.valueOf(proxyInfo).split(":");
+
+			if (proxy.length >= 2)
+			{
+				System.setProperty("socksProxyHost", proxy[0]);
+				System.setProperty("socksProxyPort", proxy[1]);
+			}
+
+			if (proxy.length >= 4)
+			{
+				System.setProperty("java.net.socks.username", proxy[2]);
+				System.setProperty("java.net.socks.password", proxy[3]);
+
+				final String user = proxy[2];
+				final char[] pass = proxy[3].toCharArray();
+
+				Authenticator.setDefault(new Authenticator()
+				{
+					private final PasswordAuthentication auth = new PasswordAuthentication(user, pass);
+
+					protected PasswordAuthentication getPasswordAuthentication()
+					{
+						return auth;
+					}
+				});
+			}
 		}
 
 		Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
