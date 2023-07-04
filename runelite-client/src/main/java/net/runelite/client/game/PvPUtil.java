@@ -49,7 +49,7 @@ public class PvPUtil
 	);
 	private static final Cuboid MAIN_WILDERNESS_CUBOID = new Cuboid(2944, 3525, 0, 3391, 4351, 3);
 	private static final Cuboid GOD_WARS_WILDERNESS_CUBOID = new Cuboid(3008, 10112, 0, 3071, 10175, 3);
-	private static final Cuboid WILDERNESS_UNDERGROUND_CUBOID = new Cuboid(2944, 9920, 0, 3455, 10879, 3);
+	private static final Cuboid WILDERNESS_UNDERGROUND_CUBOID = new Cuboid(3139, 10044, 0, 3169, 10244, 0);
 
 	/**
 	 * Gets the wilderness level based on a world point
