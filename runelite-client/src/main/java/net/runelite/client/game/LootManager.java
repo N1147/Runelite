@@ -254,12 +254,12 @@ public class LootManager
 			delayedLootTickLimit = 2;
 			delayedLootAreas = List.of(getAdjacentSquareLootTile(npc).toWorldArea());
 		}
-		else if (npc.getId() == NpcID.DUKE_SUCELLUS_12192 || npc.getId() == NpcID.DUKE_SUCELLUS_12196)
+		/*else if (npc.getId() == NpcID.DUKE_SUCELLUS_12192 || npc.getId() == NpcID.DUKE_SUCELLUS_12196)
 		{
 			delayedLootNpc = npc;
 			delayedLootTickLimit = 5;
 			delayedLootAreas = getDropLocations(npc);
-		}
+		}*/
 	}
 
 	@Subscribe
@@ -418,7 +418,7 @@ public class LootManager
 			case NpcID.SPINDEL:
 				// Bones are dropped under the center of the boss and loot is dropped under the player
 				return ImmutableList.of(npc.getWorldArea(), playerLocationLastTick.toWorldArea());
-			case NpcID.DUKE_SUCELLUS_12192:
+			/*case NpcID.DUKE_SUCELLUS_12192:
 			case NpcID.DUKE_SUCELLUS_12196:
 			{
 				final WorldPoint bossLocation = npc.getWorldLocation();
@@ -440,7 +440,7 @@ public class LootManager
 				final int expand = 8;
 				final WorldArea expandedArea = new WorldArea(bossArea.getX() - expand, bossArea.getY() - expand, bossArea.getWidth() + expand * 2, bossArea.getHeight() + expand * 2, bossArea.getPlane());
 				return List.of(expandedArea);
-			}
+			}*/
 		}
 
 		return Collections.singletonList(npc.getWorldArea());
