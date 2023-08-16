@@ -28,7 +28,7 @@
 
 	<groupId>net.runelite</groupId>
 	<artifactId>runelite-parent</artifactId>
-	<version>1.10.8.2</version>
+	<version>1.10.10.1</version>
 	<packaging>pom</packaging>
 
 	<name>RuneLite</name>
@@ -46,7 +46,7 @@
 		<checkstyle.skip>true</checkstyle.skip>
 		<glslang.path></glslang.path>
 
-		<rs.version>215</rs.version>
+		<rs.version>216</rs.version>
 	</properties>
 
 	<licenses>
@@ -122,8 +122,6 @@
 
 	<modules>
 		<module>cache</module>
-		<module>cache-client</module>
-		<module>cache-updater</module>
 		<module>runelite-api</module>
 		<module>runelite-client</module>
 		<module>runelite-jshell</module>
