@@ -30,6 +30,7 @@ import net.runelite.api.Scene;
 import net.runelite.api.SceneTileModel;
 import net.runelite.api.SceneTilePaint;
 import net.runelite.api.Texture;
+
 public interface DrawCallbacks
 {
 	/**
