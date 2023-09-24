@@ -373,14 +373,14 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 
 				initBuffers();
 				initVao();
-				try
-				{
+				//try
+				//{
 					initProgram();
-				}
-				catch (ShaderException ex)
-				{
-					throw new RuntimeException(ex);
-				}
+				//}
+				//catch (ShaderException ex)
+				//{
+				//	throw new RuntimeException(ex);
+				//}
 				initInterfaceTexture();
 				initUniformBuffer();
 
