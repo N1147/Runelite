@@ -30,9 +30,23 @@ import net.runelite.api.Scene;
 import net.runelite.api.SceneTileModel;
 import net.runelite.api.SceneTilePaint;
 import net.runelite.api.Texture;
-
 public interface DrawCallbacks
 {
+	/**
+	 * GPU mode on.
+	 */
+	int GPU = 1;
+	/**
+	 * GPU hillskew support. Enables the {@link Model#getUnskewedModel()}
+	 * API to get the unskewed model.
+	 */
+	int HILLSKEW = 2;
+	/**
+	 * Requests normals be computed for models. Enables the {@link Model#getVertexNormalsX()}
+	 * {@link Model#getVertexNormalsY()} {@link Model#getVertexNormalsZ()} API.
+	 */
+	int NORMALS = 4;
+
 	void draw(Renderable renderable, int orientation, int pitchSin, int pitchCos, int yawSin, int yawCos, int x, int y, int z, long hash);
 
 	void drawScenePaint(int orientation, int pitchSin, int pitchCos, int yawSin, int yawCos, int x, int y, int z,
@@ -50,8 +64,6 @@ public interface DrawCallbacks
 	 * @param overlayColor Color of full-viewport overlays, if any
 	 */
 	void draw(int overlayColor);
-
-	boolean drawFace(Model model, int face);
 
 	/**
 	 * Called before the scene is drawn
@@ -74,4 +86,9 @@ public interface DrawCallbacks
 	void loadScene(Scene scene);
 
 	void swapScene(Scene scene);
+
+	default boolean tileInFrustum(Scene scene, int pitchSin, int pitchCos, int yawSin, int yawCos, int cameraX, int cameraY, int cameraZ, int plane, int msx, int msy)
+	{
+		return true;
+	}
 }

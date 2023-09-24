@@ -182,7 +182,7 @@ class TextureManager
 				pixelBuffer.put(pixels);
 				pixelBuffer.flip();
 				GL43C.glTexSubImage3D(GL43C.GL_TEXTURE_2D_ARRAY, 0, 0, 0, textureId, TEXTURE_SIZE, TEXTURE_SIZE,
-					1, GL43C.GL_RGBA, GL43C.GL_UNSIGNED_BYTE, pixelBuffer);
+						1, GL43C.GL_RGBA, GL43C.GL_UNSIGNED_BYTE, pixelBuffer);
 			}
 		}
 

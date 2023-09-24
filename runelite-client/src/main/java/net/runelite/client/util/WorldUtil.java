@@ -71,8 +71,6 @@ public class WorldUtil
 				return WorldType.HIGH_RISK;
 			case LAST_MAN_STANDING:
 				return WorldType.LAST_MAN_STANDING;
-			case BETA_WORLD:
-				return WorldType.BETA_WORLD;
 			case NOSAVE_MODE:
 				return WorldType.NOSAVE_MODE;
 			case TOURNAMENT:

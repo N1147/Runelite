@@ -74,7 +74,7 @@ class GpuFloatBuffer
 	static FloatBuffer allocateDirect(int size)
 	{
 		return ByteBuffer.allocateDirect(size * Float.BYTES)
-			.order(ByteOrder.nativeOrder())
-			.asFloatBuffer();
+				.order(ByteOrder.nativeOrder())
+				.asFloatBuffer();
 	}
 }

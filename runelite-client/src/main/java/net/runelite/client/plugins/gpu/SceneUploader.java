@@ -54,6 +54,7 @@ class SceneUploader
 	int sceneId = (int) System.nanoTime();
 	private int offset;
 	private int uvoffset;
+	private int uniqueModels;
 
 	void upload(Scene scene, GpuIntBuffer vertexbuffer, GpuFloatBuffer uvBuffer)
 	{
@@ -62,16 +63,17 @@ class SceneUploader
 		++sceneId;
 		offset = 0;
 		uvoffset = 0;
+		uniqueModels = 0;
 		vertexbuffer.clear();
 		uvBuffer.clear();
 
 		for (int z = 0; z < Constants.MAX_Z; ++z)
 		{
-			for (int x = 0; x < Constants.SCENE_SIZE; ++x)
+			for (int x = 0; x < Constants.EXTENDED_SCENE_SIZE; ++x)
 			{
-				for (int y = 0; y < Constants.SCENE_SIZE; ++y)
+				for (int y = 0; y < Constants.EXTENDED_SCENE_SIZE; ++y)
 				{
-					Tile tile = scene.getTiles()[z][x][y];
+					Tile tile = scene.getExtendedTiles()[z][x][y];
 					if (tile != null)
 					{
 						upload(scene, tile, vertexbuffer, uvBuffer);
@@ -81,7 +83,7 @@ class SceneUploader
 		}
 
 		stopwatch.stop();
-		log.debug("Scene upload time: {}", stopwatch);
+		log.debug("Scene upload time: {} unique models: {} length: {}KB", stopwatch, uniqueModels, (offset * 16) / 1024);
 	}
 
 	private void upload(Scene scene, Tile tile, GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer)
@@ -106,9 +108,9 @@ class SceneUploader
 			}
 			Point tilePoint = tile.getSceneLocation();
 			int len = upload(scene, sceneTilePaint,
-				tile.getRenderLevel(), tilePoint.getX(), tilePoint.getY(),
-				vertexBuffer, uvBuffer,
-				0, 0, false);
+					tile.getRenderLevel(), tilePoint.getX(), tilePoint.getY(),
+					vertexBuffer, uvBuffer,
+					0, 0, false);
 			sceneTilePaint.setBufferLen(len);
 			offset += len;
 			if (sceneTilePaint.getTexture() != -1)
@@ -131,8 +133,9 @@ class SceneUploader
 			}
 			Point tilePoint = tile.getSceneLocation();
 			int len = upload(sceneTileModel,
-				tilePoint.getX(), tilePoint.getY(),
-				vertexBuffer, uvBuffer, false);
+					tilePoint.getX(), tilePoint.getY(),
+					0, 0,
+					vertexBuffer, uvBuffer, false);
 			sceneTileModel.setBufferLen(len);
 			offset += len;
 			if (sceneTileModel.getTriangleTextureId() != null)
@@ -200,13 +203,15 @@ class SceneUploader
 	}
 
 	int upload(Scene scene, SceneTilePaint tile, int tileZ, int tileX, int tileY, GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer,
-		int offsetX, int offsetY, boolean padUvs)
+			   int offsetX, int offsetY, boolean padUvs)
 	{
 		final int[][][] tileHeights = scene.getTileHeights();
 
 		final int localX = offsetX;
 		final int localY = offsetY;
 
+		tileX += GpuPlugin.SCENE_OFFSET;
+		tileY += GpuPlugin.SCENE_OFFSET;
 		int swHeight = tileHeights[tileZ][tileX][tileY];
 		int seHeight = tileHeights[tileZ][tileX + 1][tileY];
 		int neHeight = tileHeights[tileZ][tileX + 1][tileY + 1];
@@ -259,21 +264,21 @@ class SceneUploader
 
 		if (padUvs || tile.getTexture() != -1)
 		{
-			float tex = tile.getTexture() + 1f;
-			uvBuffer.put(tex, 1.0f, 1.0f, 0f);
-			uvBuffer.put(tex, 0.0f, 1.0f, 0f);
-			uvBuffer.put(tex, 1.0f, 0.0f, 0f);
+			int tex = tile.getTexture() + 1;
+			uvBuffer.put(tex, vertexDx, vertexDz, vertexDy);
+			uvBuffer.put(tex, vertexCx, vertexCz, vertexCy);
+			uvBuffer.put(tex, vertexBx, vertexBz, vertexBy);
 
-			uvBuffer.put(tex, 0.0f, 0.0f, 0f);
-			uvBuffer.put(tex, 1.0f, 0.0f, 0f);
-			uvBuffer.put(tex, 0.0f, 1.0f, 0f);
+			uvBuffer.put(tex, vertexDx, vertexDz, vertexDy);
+			uvBuffer.put(tex, vertexCx, vertexCz, vertexCy);
+			uvBuffer.put(tex, vertexBx, vertexBz, vertexBy);
 		}
 
 		return 6;
 	}
 
-	int upload(SceneTileModel sceneTileModel, int tileX, int tileY, GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer,
-		boolean padUvs)
+	int upload(SceneTileModel sceneTileModel, int tileX, int tileY, int offsetX, int offsetZ,
+			   GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer, boolean padUvs)
 	{
 		final int[] faceX = sceneTileModel.getFaceX();
 		final int[] faceY = sceneTileModel.getFaceY();
@@ -317,26 +322,29 @@ class SceneUploader
 
 			// vertexes are stored in scene local, convert to tile local
 			int vertexXA = vertexX[triangleA] - baseX;
+			int vertexYA = vertexY[triangleA];
 			int vertexZA = vertexZ[triangleA] - baseY;
 
 			int vertexXB = vertexX[triangleB] - baseX;
+			int vertexYB = vertexY[triangleB];
 			int vertexZB = vertexZ[triangleB] - baseY;
 
 			int vertexXC = vertexX[triangleC] - baseX;
+			int vertexYC = vertexY[triangleC];
 			int vertexZC = vertexZ[triangleC] - baseY;
 
-			vertexBuffer.put(vertexXA, vertexY[triangleA], vertexZA, colorA);
-			vertexBuffer.put(vertexXB, vertexY[triangleB], vertexZB, colorB);
-			vertexBuffer.put(vertexXC, vertexY[triangleC], vertexZC, colorC);
+			vertexBuffer.put(vertexXA + offsetX, vertexYA, vertexZA + offsetZ, colorA);
+			vertexBuffer.put(vertexXB + offsetX, vertexYB, vertexZB + offsetZ, colorB);
+			vertexBuffer.put(vertexXC + offsetX, vertexYC, vertexZC + offsetZ, colorC);
 
 			if (padUvs || triangleTextures != null)
 			{
 				if (triangleTextures != null && triangleTextures[i] != -1)
 				{
-					float tex = triangleTextures[i] + 1f;
-					uvBuffer.put(tex, vertexXA / 128f, vertexZA / 128f, 0f);
-					uvBuffer.put(tex, vertexXB / 128f, vertexZB / 128f, 0f);
-					uvBuffer.put(tex, vertexXC / 128f, vertexZC / 128f, 0f);
+					int tex = triangleTextures[i] + 1;
+					uvBuffer.put(tex, offsetX, vertexYA, offsetZ);
+					uvBuffer.put(tex, offsetX + 128, vertexYB, offsetZ);
+					uvBuffer.put(tex, offsetX, vertexYC, offsetZ + 128);
 				}
 				else
 				{
@@ -352,6 +360,12 @@ class SceneUploader
 
 	private void uploadSceneModel(Model model, GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer)
 	{
+		// deduplicate hillskewed models
+		if (model.getUnskewedModel() != null)
+		{
+			model = model.getUnskewedModel();
+		}
+
 		if (model.getSceneId() == sceneId)
 		{
 			return; // model has already been uploaded
@@ -367,6 +381,7 @@ class SceneUploader
 			model.setUvBufferOffset(-1);
 		}
 		model.setSceneId(sceneId);
+		++uniqueModels;
 
 		int len = pushModel(model, vertexBuffer, uvBuffer);
 
@@ -581,11 +596,6 @@ class SceneUploader
 		final int cameraY = client.getCameraY2();
 		final int cameraZ = client.getCameraZ2();
 
-		// camera in model space
-		int mCameraX = -x;
-		int mCameraY = -y;
-		int mCameraZ = -z;
-
 		// remove camera offset from model
 		x += cameraX;
 		y += cameraY;
@@ -597,16 +607,6 @@ class SceneUploader
 		{
 			orientSine = Perspective.SINE[orientation];
 			orientCosine = Perspective.COSINE[orientation];
-		}
-
-		// de-rotate model space camera because texture calculations work on the unrotated model
-		{
-			int iorientation = (2048 - orientation) & 2047;
-			int iorientSine = Perspective.SINE[iorientation];
-			int iorientCosine = Perspective.COSINE[iorientation];
-			int i = mCameraZ * iorientSine + mCameraX * iorientCosine >> 16;
-			mCameraZ = mCameraZ * iorientCosine - mCameraX * iorientSine >> 16;
-			mCameraX = i;
 		}
 
 		for (int v = 0; v < vertexCount; ++v)
@@ -674,12 +674,12 @@ class SceneUploader
 				final int v3 = indices3[i];
 
 				final float
-					aX = modelCanvasX[v1],
-					aY = modelCanvasY[v1],
-					bX = modelCanvasX[v2],
-					bY = modelCanvasY[v2],
-					cX = modelCanvasX[v3],
-					cY = modelCanvasY[v3];
+						aX = modelCanvasX[v1],
+						aY = modelCanvasY[v1],
+						bX = modelCanvasX[v2],
+						bY = modelCanvasY[v2],
+						cX = modelCanvasX[v3],
+						cY = modelCanvasY[v3];
 
 				if ((aX - bX) * (cY - bY) - (cX - bX) * (aY - bY) > 0)
 				{
@@ -706,7 +706,7 @@ class SceneUploader
 					for (int faceIdx = 0; faceIdx < cnt; ++faceIdx)
 					{
 						final int face = faces[faceIdx];
-						len += pushFace(model, mCameraX, mCameraY, mCameraZ, face, vertexBuffer, uvBuffer);
+						len += pushFace(model, face, vertexBuffer, uvBuffer);
 					}
 				}
 			}
@@ -791,7 +791,7 @@ class SceneUploader
 				while (pri == 0 && currFaceDistance > avg12)
 				{
 					final int face = dynFaces[drawnFaces++];
-					len += pushFace(model, mCameraX, mCameraY, mCameraZ, face, vertexBuffer, uvBuffer);
+					len += pushFace(model, face, vertexBuffer, uvBuffer);
 
 					if (drawnFaces == numDynFaces && dynFaces != orderedFaces[11])
 					{
@@ -814,7 +814,7 @@ class SceneUploader
 				while (pri == 3 && currFaceDistance > avg34)
 				{
 					final int face = dynFaces[drawnFaces++];
-					len += pushFace(model, mCameraX, mCameraY, mCameraZ, face, vertexBuffer, uvBuffer);
+					len += pushFace(model, face, vertexBuffer, uvBuffer);
 
 					if (drawnFaces == numDynFaces && dynFaces != orderedFaces[11])
 					{
@@ -837,7 +837,7 @@ class SceneUploader
 				while (pri == 5 && currFaceDistance > avg68)
 				{
 					final int face = dynFaces[drawnFaces++];
-					len += pushFace(model, mCameraX, mCameraY, mCameraZ, face, vertexBuffer, uvBuffer);
+					len += pushFace(model, face, vertexBuffer, uvBuffer);
 
 					if (drawnFaces == numDynFaces && dynFaces != orderedFaces[11])
 					{
@@ -863,14 +863,14 @@ class SceneUploader
 				for (int faceIdx = 0; faceIdx < priNum; ++faceIdx)
 				{
 					final int face = priFaces[faceIdx];
-					len += pushFace(model, mCameraX, mCameraY, mCameraZ, face, vertexBuffer, uvBuffer);
+					len += pushFace(model, face, vertexBuffer, uvBuffer);
 				}
 			}
 
 			while (currFaceDistance != -1000)
 			{
 				final int face = dynFaces[drawnFaces++];
-				len += pushFace(model, mCameraX, mCameraY, mCameraZ, face, vertexBuffer, uvBuffer);
+				len += pushFace(model, face, vertexBuffer, uvBuffer);
 
 				if (drawnFaces == numDynFaces && dynFaces != orderedFaces[11])
 				{
@@ -894,12 +894,8 @@ class SceneUploader
 		return len;
 	}
 
-	private int pushFace(Model model, int cameraX, int cameraY, int cameraZ, int face, GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer)
+	private int pushFace(Model model, int face, GpuIntBuffer vertexBuffer, GpuFloatBuffer uvBuffer)
 	{
-		final int[] verticesX = model.getVerticesX();
-		final int[] verticesY = model.getVerticesY();
-		final int[] verticesZ = model.getVerticesZ();
-
 		final int[] indices1 = model.getFaceIndices1();
 		final int[] indices2 = model.getFaceIndices2();
 		final int[] indices3 = model.getFaceIndices3();
@@ -954,171 +950,26 @@ class SceneUploader
 
 		if (faceTextures != null && faceTextures[face] != -1)
 		{
-			float u0, u1, u2, v0, v1, v2;
+			int texA, texB, texC;
 
 			if (textureFaces != null && textureFaces[face] != -1)
 			{
 				int tfaceIdx = textureFaces[face] & 0xff;
-				int texA = texIndices1[tfaceIdx];
-				int texB = texIndices2[tfaceIdx];
-				int texC = texIndices3[tfaceIdx];
-
-				float f1x = verticesX[triangleA];
-				float f1y = verticesY[triangleA];
-				float f1z = verticesZ[triangleA];
-
-				float f2x = verticesX[triangleB];
-				float f2y = verticesY[triangleB];
-				float f2z = verticesZ[triangleB];
-
-				float f3x = verticesX[triangleC];
-				float f3y = verticesY[triangleC];
-				float f3z = verticesZ[triangleC];
-
-				float t1x = verticesX[texA];
-				float t1y = verticesY[texA];
-				float t1z = verticesZ[texA];
-
-				float t2x = verticesX[texB];
-				float t2y = verticesY[texB];
-				float t2z = verticesZ[texB];
-
-				float t3x = verticesX[texC];
-				float t3y = verticesY[texC];
-				float t3z = verticesZ[texC];
-
-				// v2 = t2 - t1
-				float v2x = t2x - t1x;
-				float v2y = t2y - t1y;
-				float v2z = t2z - t1z;
-				// v3 = t3 - t1
-				float v3x = t3x - t1x;
-				float v3y = t3y - t1y;
-				float v3z = t3z - t1z;
-
-				// texNormal = v2 x v3
-				float texNormalx = v2y * v3z - v2z * v3y;
-				float texNormaly = v2z * v3x - v2x * v3z;
-				float texNormalz = v2x * v3y - v2y * v3x;
-
-				float vertexToCamerax, vertexToCameray, vertexToCameraz;
-				float f;
-
-				// vertexToCamera = cameraPos - f1
-				vertexToCamerax = cameraX - f1x;
-				vertexToCameray = cameraY - f1y;
-				vertexToCameraz = cameraZ - f1z;
-				// f1 += vertexToCamera * ((t1 - f1) ⋅ texNormal) / (vertexToCamera ⋅ texNormal)
-				f = ((t1x - f1x) * texNormalx + (t1y - f1y) * texNormaly + (t1z - f1z) * texNormalz) /
-					(vertexToCamerax * texNormalx + vertexToCameray * texNormaly + vertexToCameraz * texNormalz);
-				f1x += vertexToCamerax * f;
-				f1y += vertexToCameray * f;
-				f1z += vertexToCameraz * f;
-
-				// vertexToCamera = cameraPos - f2
-				vertexToCamerax = cameraX - f2x;
-				vertexToCameray = cameraY - f2y;
-				vertexToCameraz = cameraZ - f2z;
-				// f2 += vertexToCamera * ((t2 - f2) ⋅ texNormal) / (vertexToCamera ⋅ texNormal)
-				f = ((t2x - f2x) * texNormalx + (t2y - f2y) * texNormaly + (t2z - f2z) * texNormalz) /
-					(vertexToCamerax * texNormalx + vertexToCameray * texNormaly + vertexToCameraz * texNormalz);
-				f2x += vertexToCamerax * f;
-				f2y += vertexToCameray * f;
-				f2z += vertexToCameraz * f;
-
-				// vertexToCamera = cameraPos - f3
-				vertexToCamerax = cameraX - f3x;
-				vertexToCameray = cameraY - f3y;
-				vertexToCameraz = cameraZ - f3z;
-				// f3 += vertexToCamera * ((t3 - f3) ⋅ texNormal) / (vertexToCamera ⋅ texNormal)
-				f = ((t3x - f3x) * texNormalx + (t3y - f3y) * texNormaly + (t3z - f3z) * texNormalz) /
-					(vertexToCamerax * texNormalx + vertexToCameray * texNormaly + vertexToCameraz * texNormalz);
-				f3x += vertexToCamerax * f;
-				f3y += vertexToCameray * f;
-				f3z += vertexToCameraz * f;
-
-				// v4 = f1 - t1
-				float v4x = f1x - t1x;
-				float v4y = f1y - t1y;
-				float v4z = f1z - t1z;
-				// v5 = f2 - t1
-				float v5x = f2x - t1x;
-				float v5y = f2y - t1y;
-				float v5z = f2z - t1z;
-				// v6 = f3 - t1
-				float v6x = f3x - t1x;
-				float v6y = f3y - t1y;
-				float v6z = f3z - t1z;
-
-				// v8 = v3 x texNormal
-				float v8x = v3y * texNormalz - v3z * texNormaly;
-				float v8y = v3z * texNormalx - v3x * texNormalz;
-				float v8z = v3x * texNormaly - v3y * texNormalx;
-
-				// f = 1 / (v8 ⋅ v2)
-				f = 1.0F / (v8x * v2x + v8y * v2y + v8z * v2z);
-
-				// u0 = (v8 ⋅ v4) * f
-				u0 = (v8x * v4x + v8y * v4y + v8z * v4z) * f;
-				// u1 = (v8 ⋅ v5) * f
-				u1 = (v8x * v5x + v8y * v5y + v8z * v5z) * f;
-				// u2 = (v8 ⋅ v6) * f
-				u2 = (v8x * v6x + v8y * v6y + v8z * v6z) * f;
-
-				// v8 = v2 x texNormal
-				v8x = v2y * texNormalz - v2z * texNormaly;
-				v8y = v2z * texNormalx - v2x * texNormalz;
-				v8z = v2x * texNormaly - v2y * texNormalx;
-
-				// f = 1 / (v8 ⋅ v3)
-				f = 1.0F / (v8x * v3x + v8y * v3y + v8z * v3z);
-
-				// v0 = (v8 ⋅ v4) * f
-				v0 = (v8x * v4x + v8y * v4y + v8z * v4z) * f;
-				// v1 = (v8 ⋅ v5) * f
-				v1 = (v8x * v5x + v8y * v5y + v8z * v5z) * f;
-				// v2 = (v8 ⋅ v6) * f
-				v2 = (v8x * v6x + v8y * v6y + v8z * v6z) * f;
+				texA = texIndices1[tfaceIdx];
+				texB = texIndices2[tfaceIdx];
+				texC = texIndices3[tfaceIdx];
 			}
 			else
 			{
-				// Without a texture face, the client assigns tex = triangle, but the resulting
-				// calculations can be reduced:
-				//
-				// v1 = vertex[texA]
-				// v2 = vertex[texB] - v1
-				// v3 = vertex[texC] - v1
-				//
-				// v4 = 0
-				// v5 = v2
-				// v6 = v3
-				//
-				// v7 = v2 x v3
-				//
-				// v8 = v3 x v7
-				// u0 = (v8 . v4) / (v8 . v2) // 0 because v4 is 0
-				// u1 = (v8 . v5) / (v8 . v2) // 1 because v5=v2
-				// u2 = (v8 . v6) / (v8 . v2) // 0 because v8 is perpendicular to v3/v6
-				//
-				// v8 = v2 x v7
-				// v0 = (v8 . v4) / (v8 ⋅ v3) // 0 because v4 is 0
-				// v1 = (v8 . v5) / (v8 ⋅ v3) // 0 because v8 is perpendicular to v5/v2
-				// v2 = (v8 . v6) / (v8 ⋅ v3) // 1 because v6=v3
-
-				u0 = 0f;
-				v0 = 0f;
-
-				u1 = 1f;
-				v1 = 0f;
-
-				u2 = 0f;
-				v2 = 1f;
+				texA = triangleA;
+				texB = triangleB;
+				texC = triangleC;
 			}
 
 			int texture = faceTextures[face] + 1;
-			uvBuffer.put(texture, u0, v0, 0f);
-			uvBuffer.put(texture, u1, v1, 0f);
-			uvBuffer.put(texture, u2, v2, 0f);
+			uvBuffer.put(texture, modelLocalX[texA], modelLocalY[texA], modelLocalZ[texA]);
+			uvBuffer.put(texture, modelLocalX[texB], modelLocalY[texB], modelLocalZ[texB]);
+			uvBuffer.put(texture, modelLocalX[texC], modelLocalY[texC], modelLocalZ[texC]);
 		}
 		else
 		{

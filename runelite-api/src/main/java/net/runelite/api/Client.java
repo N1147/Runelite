@@ -1842,6 +1842,9 @@ public interface Client extends OAuthApi, GameEngine
 	 */
 	int getOculusOrbFocalPointY();
 
+	void setExpandedMapLoading(int chunks);
+	int getExpandedMapLoading();
+
 	/**
 	 * Opens in-game world hopper interface
 	 */
@@ -1865,7 +1868,7 @@ public interface Client extends OAuthApi, GameEngine
 
 	boolean isGpu();
 
-	void setGpu(boolean gpu);
+	void setGpuFlags(int gpuflags);
 
 	int get3dZoom();
 	int getCenterX();
