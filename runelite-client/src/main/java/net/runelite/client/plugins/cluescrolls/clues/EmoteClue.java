@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.Client;
 import static net.runelite.api.EquipmentInventorySlot.AMMO;
@@ -108,7 +109,7 @@ public class EmoteClue extends ClueScroll implements LocationClueScroll
 		new EmoteClue("Beckon on the east coast of the Kharazi Jungle. Beware of double agents! Equip any vestment stole and a heraldic rune shield.", "Kharazi Jungle", NORTHEAST_CORNER_OF_THE_KHARAZI_JUNGLE, new WorldPoint(2954, 2933, 0), DOUBLE_AGENT_108, BECKON, any("Any stole", item(GUTHIX_STOLE), item(SARADOMIN_STOLE), item(ZAMORAK_STOLE), item(ARMADYL_STOLE), item(BANDOS_STOLE), item(ANCIENT_STOLE)), any("Any heraldic rune shield", item(RUNE_SHIELD_H1), item(RUNE_SHIELD_H2), item(RUNE_SHIELD_H3), item(RUNE_SHIELD_H4), item(RUNE_SHIELD_H5))),
 		new EmoteClue("Cheer in the Barbarian Agility Arena. Headbang before you talk to me. Equip a steel platebody, maple shortbow and a Wilderness cape.", "Barbarian Outpost", BARBARIAN_OUTPOST_OBSTACLE_COURSE, new WorldPoint(2552, 3556, 0), CHEER, HEADBANG, item(STEEL_PLATEBODY), item(MAPLE_SHORTBOW), range("Any team cape", TEAM1_CAPE, TEAM50_CAPE)),
 		new EmoteClue("Bow upstairs in the Edgeville Monastery. Equip a completed prayer book.", "Edgeville Monastery", SOUTHEAST_CORNER_OF_THE_MONASTERY, new WorldPoint(3056, 3484, 1), BOW, any("Any god book", item(HOLY_BOOK), item(BOOK_OF_BALANCE), item(UNHOLY_BOOK), item(BOOK_OF_LAW), item(BOOK_OF_WAR), item(BOOK_OF_DARKNESS), item(HOLY_BOOK_OR), item(BOOK_OF_BALANCE_OR), item(UNHOLY_BOOK_OR), item(BOOK_OF_LAW_OR), item(BOOK_OF_WAR_OR), item(BOOK_OF_DARKNESS_OR))),
-		new EmoteClue("Cheer in the Shadow dungeon. Equip a rune crossbow, climbing boots and any mitre.", "Shadow dungeon", ENTRANCE_OF_THE_CAVE_OF_DAMIS, new WorldPoint(2629, 5071, 0), CHEER, any("Any mitre", item(GUTHIX_MITRE), item(SARADOMIN_MITRE), item(ZAMORAK_MITRE), item(ANCIENT_MITRE), item(BANDOS_MITRE), item(ARMADYL_MITRE)), any("Rune crossbow", item(RUNE_CROSSBOW), item(RUNE_CROSSBOW_OR)), any("Climbing boots", item(CLIMBING_BOOTS), item(CLIMBING_BOOTS_G)), item(RING_OF_VISIBILITY)),
+		new EmoteClue("Cheer in the Shadow dungeon. Equip a rune crossbow, climbing boots and any mitre.", "Shadow dungeon", ENTRANCE_OF_THE_CAVE_OF_DAMIS, new WorldPoint(2629, 5071, 0), CHEER, any("Any mitre", item(GUTHIX_MITRE), item(SARADOMIN_MITRE), item(ZAMORAK_MITRE), item(ANCIENT_MITRE), item(BANDOS_MITRE), item(ARMADYL_MITRE)), any("Rune crossbow", item(RUNE_CROSSBOW), item(RUNE_CROSSBOW_OR)), any("Climbing boots", item(CLIMBING_BOOTS), item(CLIMBING_BOOTS_G)), any("Ring of visibility or ring of shadows", item(RING_OF_VISIBILITY), item(RING_OF_SHADOWS), item(RING_OF_SHADOWS_UNCHARGED))),
 		new EmoteClue("Cheer at the top of the agility pyramid. Beware of double agents! Equip a blue mystic robe top, and any rune heraldic shield.", "Agility Pyramid", AGILITY_PYRAMID, new WorldPoint(3043, 4697, 3), DOUBLE_AGENT_108, CHEER, item(MYSTIC_ROBE_TOP), any("Any rune heraldic shield", item(RUNE_SHIELD_H1), item(RUNE_SHIELD_H2), item(RUNE_SHIELD_H3), item(RUNE_SHIELD_H4), item(RUNE_SHIELD_H5))),
 		new EmoteClue("Dance in Iban's temple. Beware of double agents! Equip Iban's staff, a black mystic top and a black mystic bottom.", "Iban's temple", WELL_OF_VOYAGE, new WorldPoint(2011, 4712, 0), DOUBLE_AGENT_141, DANCE, any("Any iban's staff", item(IBANS_STAFF), item(IBANS_STAFF_U)), item(MYSTIC_ROBE_TOP_DARK), item(MYSTIC_ROBE_BOTTOM_DARK)),
 		new EmoteClue("Dance on the Fishing Platform. Equip barrows gloves, an amulet of glory and a dragon med helm.", "Fishing Platform", SOUTHEAST_CORNER_OF_THE_FISHING_PLATFORM, new WorldPoint(2782, 3273, 0), DANCE, any("Any amulet of glory", item(AMULET_OF_GLORY), item(AMULET_OF_GLORY1), item(AMULET_OF_GLORY2), item(AMULET_OF_GLORY3), item(AMULET_OF_GLORY4), item(AMULET_OF_GLORY5), item(AMULET_OF_GLORY6)), item(BARROWS_GLOVES), item(DRAGON_MED_HELM)),
@@ -161,7 +162,7 @@ public class EmoteClue extends ClueScroll implements LocationClueScroll
 		new EmoteClue("Goblin Salute in the Goblin Village. Beware of double agents! Equip a bandos godsword, a bandos cloak and a bandos platebody.", "Goblin Village", OUTSIDE_MUDKNUCKLES_HUT, new WorldPoint(2956, 3505, 0), DOUBLE_AGENT_141, GOBLIN_SALUTE, item(BANDOS_PLATEBODY), item(BANDOS_CLOAK), any("Bandos godsword", item(BANDOS_GODSWORD), item(BANDOS_GODSWORD_OR))),
 		new EmoteClue("Headbang in the mine north of Al Kharid. Equip a desert shirt, leather gloves and leather boots.", "Al Kharid mine", AL_KHARID_SCORPION_MINE, new WorldPoint(3299, 3289, 0), HEADBANG, item(DESERT_SHIRT), item(LEATHER_GLOVES), item(LEATHER_BOOTS)),
 		new EmoteClue("Headbang at the exam centre. Beware of double agents! Equip a mystic fire staff, a diamond bracelet and rune boots.", "Exam Centre", INSIDE_THE_DIGSITE_EXAM_CENTRE, new WorldPoint(3362, 3340, 0), DOUBLE_AGENT_108, HEADBANG, item(MYSTIC_FIRE_STAFF), item(DIAMOND_BRACELET), item(RUNE_BOOTS)),
-		new EmoteClue("Headbang at the top of Slayer Tower. Equip a seercull, a combat bracelet and helm of Neitiznot.", "Slayer Tower", OUTSIDE_THE_SLAYER_TOWER_GARGOYLE_ROOM, new WorldPoint(3421, 3537, 2), HEADBANG, item(SEERCULL), range("Combat bracelet", COMBAT_BRACELET4, COMBAT_BRACELET), item(HELM_OF_NEITIZNOT)),
+		new EmoteClue("Headbang at the top of Slayer Tower. Equip a seercull, a combat bracelet and helm of Neitiznot.", "Slayer Tower", OUTSIDE_THE_SLAYER_TOWER_GARGOYLE_ROOM, new WorldPoint(3421, 3537, 2), HEADBANG, item(SEERCULL), any("Combat bracelet", range(COMBAT_BRACELET4, COMBAT_BRACELET), item(COMBAT_BRACELET5), item(COMBAT_BRACELET6)), item(HELM_OF_NEITIZNOT)),
 		new EmoteClue("Dance a jig by the entrance to the Fishing Guild. Equip an emerald ring, a sapphire amulet, and a bronze chain body.", "Fishing Guild", OUTSIDE_THE_FISHING_GUILD, new WorldPoint(2610, 3391, 0), JIG, item(EMERALD_RING), item(SAPPHIRE_AMULET), item(BRONZE_CHAINBODY)),
 		new EmoteClue("Dance a jig under Shantay's Awning. Bow before you talk to me. Equip a pointed blue snail helmet, an air staff and a bronze square shield.", "Shantay Pass", SHANTAY_PASS, new WorldPoint(3304, 3124, 0), JIG, BOW, any("Bruise blue snelm (pointed)", item(BRUISE_BLUE_SNELM_3343)), item(STAFF_OF_AIR), item(BRONZE_SQ_SHIELD)),
 		new EmoteClue("Do a jig in Varrock's rune store. Equip an air tiara and a staff of water.", "Varrock rune store", AUBURYS_SHOP_IN_VARROCK, new WorldPoint(3253, 3401, 0), JIG, item(AIR_TIARA), item(STAFF_OF_WATER)),
@@ -219,7 +220,7 @@ public class EmoteClue extends ClueScroll implements LocationClueScroll
 		new EmoteClue("Bow to Brugsen Bursen at the Grand Exchange.", "Grand Exchange", null, new WorldPoint(3164, 3477, 0), BOW),
 		new EmoteClue("Cheer at Iffie Nitter. Equip a chef hat and a red cape.", "Varrock", FINE_CLOTHES_ENTRANCE, new WorldPoint(3205, 3416, 0), CHEER, item(CHEFS_HAT), item(RED_CAPE)),
 		new EmoteClue("Clap at Bob's Brilliant Axes. Equip a bronze axe and leather boots.", "Lumbridge", BOB_AXES_ENTRANCE, new WorldPoint(3231, 3203, 0), CLAP, item(BRONZE_AXE), item(LEATHER_BOOTS)),
-		new EmoteClue("Panic at Al Kharid mine.", "Al Kharid mine", null, new WorldPoint(3300, 3314, 0), PANIC),
+		new EmoteClue("Panic at Al Kharid mine.", "Al Kharid mine", null, new WorldPoint(3303, 3271, 0), PANIC),
 		new EmoteClue("Spin at Flynn's Mace Shop.", "Falador", null, new WorldPoint(2950, 3387, 0), SPIN),
 		new EmoteClue("Salute by the Charcoal Burners. Equip a Farmer's strawhat, Shayzien platebody (5) and Pyromancer robes.", "Charcoal Burners", CHARCOAL_BURNERS, new WorldPoint(1714, 3467, 0), SALUTE, any("Farmer's strawhat", item(FARMERS_STRAWHAT), item(FARMERS_STRAWHAT_13647)), item(SHAYZIEN_BODY_5), item(PYROMANCER_ROBE)));
 
@@ -230,6 +231,7 @@ public class EmoteClue extends ClueScroll implements LocationClueScroll
 	private final String locationName;
 	@Nullable
 	private final STASHUnit stashUnit;
+	@Getter(AccessLevel.PRIVATE)
 	private final WorldPoint location;
 	private final Emote firstEmote;
 	private final Emote secondEmote;
@@ -262,6 +264,12 @@ public class EmoteClue extends ClueScroll implements LocationClueScroll
 		this(text, locationName, stashUnit, location, firstEmote, secondEmote, itemRequirements);
 		setRequiresLight(true);
 		setFirePitVarbitId(firePitVarbitId);
+	}
+
+	@Override
+	public WorldPoint getLocation(ClueScrollPlugin plugin)
+	{
+		return location;
 	}
 
 	@Override
