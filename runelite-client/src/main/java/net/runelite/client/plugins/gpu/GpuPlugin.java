@@ -886,14 +886,14 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 		vertexBuffer.ensureCapacity(32);
 		IntBuffer uniformBuf = vertexBuffer.getBuffer();
 		uniformBuf
-			.put(Float.floatToIntBits((float) cameraYaw))
-			.put(Float.floatToIntBits((float) cameraPitch))
+			.put(client.getCameraYaw())
+			.put(client.getCameraPitch())
 			.put(client.getCenterX())
 			.put(client.getCenterY())
 			.put(client.getScale())
-			.put(Float.floatToIntBits((float) cameraX))
-			.put(Float.floatToIntBits((float) cameraY))
-			.put(Float.floatToIntBits((float) cameraZ));
+			.put(client.getCameraX2())
+			.put(client.getCameraY2())
+			.put(client.getCameraZ2());
 		uniformBuf.flip();
 
 		GL43C.glBindBuffer(GL43C.GL_UNIFORM_BUFFER, uniformBuffer.glBufferId);
@@ -1824,12 +1824,6 @@ public class GpuPlugin extends Plugin implements DrawCallbacks
 
 			targetBufferOffset += len;
 		}
-	}
-
-	//@Override
-	public boolean drawFace(Model model, int face)
-	{
-		return false;
 	}
 
 	/**
