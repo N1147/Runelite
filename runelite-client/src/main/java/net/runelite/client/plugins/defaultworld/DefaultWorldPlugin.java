@@ -41,12 +41,11 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.WorldUtil;
 import net.runelite.http.api.worlds.World;
 import net.runelite.http.api.worlds.WorldResult;
-import net.runelite.http.api.worlds.WorldType;
 
 @PluginDescriptor(
-		name = "Default World",
-		description = "Enable a default world to be selected when launching the client",
-		tags = {"home"}
+	name = "Default World",
+	description = "Enable a default world to be selected when launching the client",
+	tags = {"home"}
 )
 @Slf4j
 public class DefaultWorldPlugin extends Plugin
@@ -63,7 +62,6 @@ public class DefaultWorldPlugin extends Plugin
 	@Inject
 	private WorldService worldService;
 
-	@Inject
 	@Named("safeMode")
 	private boolean safeMode;
 
@@ -135,13 +133,6 @@ public class DefaultWorldPlugin extends Plugin
 		if (world == null)
 		{
 			log.warn("World {} not found.", correctedWorld);
-			return;
-		}
-
-		if (world.getTypes().contains(WorldType.BETA_WORLD) ||
-				world.getTypes().contains(WorldType.NOSAVE_MODE))
-		{
-			log.debug("Skipping world {}", world);
 			return;
 		}
 
