@@ -66,8 +66,8 @@ import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WallObjectDespawned;
 import net.runelite.api.events.WallObjectSpawned;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -181,7 +181,7 @@ public class MotherlodePlugin extends Plugin
 		rocks.clear();
 		brokenStruts.clear();
 
-		Widget sack = client.getWidget(WidgetInfo.MOTHERLODE_MINE);
+		Widget sack = client.getWidget(ComponentID.MLM_CONTAINER);
 
 		clientThread.invokeLater(() ->
 		{
