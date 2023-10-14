@@ -26,132 +26,43 @@
 package net.runelite.client.util;
 
 import com.google.common.base.Strings;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.awt.datatransfer.Clipboard;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.swing.SwingUtilities;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.Point;
 import net.runelite.client.Notifier;
 import static net.runelite.client.RuneLite.SCREENSHOT_DIR;
 import net.runelite.client.config.RuneScapeProfileType;
-import net.runelite.client.eventbus.EventBus;
-import net.runelite.client.events.ScreenshotTaken;
-import net.runelite.client.ui.ClientUI;
-import net.runelite.client.ui.DrawManager;
 
 @Slf4j
 @Singleton
-@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class ImageCapture
 {
 	private static final DateFormat TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
 
 	private final Client client;
 	private final Notifier notifier;
-	private final ClientUI clientUi;
-	private final DrawManager drawManager;
-	private final ScheduledExecutorService executor;
-	private final EventBus eventBus;
 
-	/**
-	 * Take a screenshot and save it
-	 * @param subDir the subdirectory to save the screenshot in
-	 * @param fileName the filename for the screenshot
-	 * @param includeClientFrame whether to include the client ui in the screenshot
-	 * @param notify whether to send a notification
-	 * @param copyToClipboard whether to copy the screenshot to clipboard
-	 */
-	public void takeScreenshot(@Nullable String subDir, String fileName, boolean includeClientFrame,
-		boolean notify, boolean copyToClipboard)
+	@Inject
+	private ImageCapture(
+		final Client client,
+		final Notifier notifier
+	)
 	{
-		drawManager.requestNextFrameListener((img) ->
-		{
-			// This callback is on the client thread, move to executor thread now that we have the screenshot
-			executor.submit(() ->
-			{
-				final BufferedImage screenshot;
-				if (includeClientFrame)
-				{
-					screenshot = addClientFrame(img);
-				}
-				else
-				{
-					screenshot = ImageUtil.bufferedImageFromImage(img);
-				}
-
-				saveScreenshot(screenshot, fileName, subDir, notify, copyToClipboard);
-			});
-		});
-	}
-
-	/**
-	 * Add the client frame to a screenshot
-	 *
-	 * @param image the screenshot
-	 * @return
-	 */
-	public BufferedImage addClientFrame(Image image)
-	{
-		// create a new image, paint the client ui to it, and then draw the screenshot to that
-		final AffineTransform transform = OSType.getOSType() == OSType.MacOS ? new AffineTransform() :
-			clientUi.getGraphicsConfiguration().getDefaultTransform();
-
-		// scaled client dimensions
-		int clientWidth = getScaledValue(transform.getScaleX(), clientUi.getWidth());
-		int clientHeight = getScaledValue(transform.getScaleY(), clientUi.getHeight());
-
-		final BufferedImage screenshot = new BufferedImage(clientWidth, clientHeight, BufferedImage.TYPE_INT_ARGB);
-
-		Graphics2D graphics = (Graphics2D) screenshot.getGraphics();
-		AffineTransform originalTransform = graphics.getTransform();
-		// scale g2d for the paint() call
-		graphics.setTransform(transform);
-
-		// Draw the client frame onto the screenshot
-		try
-		{
-			SwingUtilities.invokeAndWait(() -> clientUi.paint(graphics));
-		}
-		catch (InterruptedException | InvocationTargetException e)
-		{
-			log.warn("unable to paint client UI on screenshot", e);
-		}
-
-		// Find the position of the canvas inside the frame
-		final Point canvasOffset = clientUi.getCanvasOffset();
-		final int gameOffsetX = getScaledValue(transform.getScaleX(), canvasOffset.getX());
-		final int gameOffsetY = getScaledValue(transform.getScaleY(), canvasOffset.getY());
-
-		// Draw the original screenshot onto the new screenshot
-		graphics.setTransform(originalTransform); // the original screenshot is already scaled
-		graphics.drawImage(image, gameOffsetX, gameOffsetY, null);
-		graphics.dispose();
-
-		return screenshot;
-	}
-
-	private static int getScaledValue(final double scale, final int value)
-	{
-		return (int) (value * scale + .5);
+		this.client = client;
+		this.notifier = notifier;
 	}
 
 	/**
@@ -238,12 +149,6 @@ public class ImageCapture
 		{
 			notifier.notify("A screenshot was saved to " + screenshotFile, TrayIcon.MessageType.INFO);
 		}
-
-		ScreenshotTaken screenshotTaken = new ScreenshotTaken(
-			screenshotFile,
-			screenshot
-		);
-		eventBus.post(screenshotTaken);
 	}
 
 	/**
