@@ -325,11 +325,6 @@ public class ItemManager
 	 */
 	public int getWikiPrice(ItemPrice itemPrice)
 	{
-		if (client.getWorldType().contains(WorldType.FRESH_START_WORLD))
-		{
-			// thresholds don't apply to fsw pricing.
-			return itemPrice.getWikiPriceFsw() <= 0 ? itemPrice.getPrice() : itemPrice.getWikiPriceFsw();
-		}
 
 		final int wikiPrice = itemPrice.getWikiPrice();
 		final int jagPrice = itemPrice.getPrice();
