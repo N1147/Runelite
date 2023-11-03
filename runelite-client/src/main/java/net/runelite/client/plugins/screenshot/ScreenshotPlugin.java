@@ -78,6 +78,7 @@ import net.runelite.client.util.ImageCapture;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 import net.runelite.client.util.Text;
+import org.apache.commons.lang3.StringUtils;
 
 @PluginDescriptor(
 	name = "Screenshot",
@@ -94,13 +95,14 @@ public class ScreenshotPlugin extends Plugin
 	private static final int CORRUPTED_GAUNTLET_REGION = 7768;
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("([0-9]+)");
 	private static final Pattern LEVEL_UP_PATTERN = Pattern.compile(".*Your ([a-zA-Z]+) (?:level is|are)? now (\\d+)\\.");
+	private static final Pattern LEVEL_UP_MESSAGE_PATTERN = Pattern.compile("Congratulations, you've (just advanced your (?<skill>[a-zA-Z]+) level\\. You are now level (?<level>\\d+)|reached the highest possible (?<skill99>[a-zA-Z]+) level of 99)\\.");
 	private static final Pattern BOSSKILL_MESSAGE_PATTERN = Pattern.compile("Your (.+) kill count is: <col=ff0000>(\\d+)</col>.");
 	private static final Pattern VALUABLE_DROP_PATTERN = Pattern.compile(".*Valuable drop: ([^<>]+?\\(((?:\\d+,?)+) coins\\))(?:</col>)?");
 	private static final Pattern UNTRADEABLE_DROP_PATTERN = Pattern.compile(".*Untradeable drop: ([^<>]+)(?:</col>)?");
 	private static final Pattern DUEL_END_PATTERN = Pattern.compile("You have now (won|lost) ([0-9,]+) duels?\\.");
 	private static final Pattern QUEST_PATTERN_1 = Pattern.compile(".+?ve\\.*? (?<verb>been|rebuilt|.+?ed)? ?(?:the )?'?(?<quest>.+?)'?(?: [Qq]uest)?[!.]?$");
 	private static final Pattern QUEST_PATTERN_2 = Pattern.compile("'?(?<quest>.+?)'?(?: [Qq]uest)? (?<verb>[a-z]\\w+?ed)?(?: f.*?)?[!.]?$");
-	private static final Pattern COMBAT_ACHIEVEMENTS_PATTERN = Pattern.compile("Congratulations, you've completed an? (?<tier>\\w+) combat task: <col=[0-9a-f]+>(?<task>(.+))</col>\\.");
+	private static final Pattern COMBAT_ACHIEVEMENTS_PATTERN = Pattern.compile("Congratulations, you've completed an? (?<tier>\\w+) combat task: <col=[0-9a-f]+>(?<task>(.+))</col>");
 	private static final ImmutableList<String> RFD_TAGS = ImmutableList.of("Another Cook", "freed", "defeated", "saved");
 	private static final ImmutableList<String> WORD_QUEST_IN_NAME_TAGS = ImmutableList.of("Another Cook", "Doric", "Heroes", "Legends", "Observatory", "Olaf", "Waterfall");
 	private static final ImmutableList<String> PET_MESSAGES = ImmutableList.of("You have a funny feeling like you're being followed",
@@ -507,6 +509,19 @@ public class ScreenshotPlugin extends Plugin
 				takeScreenshot(fileName, SD_COMBAT_ACHIEVEMENTS);
 			}
 		}
+
+		if (client.getVarbitValue(Varbits.DISABLE_LEVEL_UP_INTERFACE) == 1 && config.screenshotLevels())
+		{
+			Matcher m = LEVEL_UP_MESSAGE_PATTERN.matcher(chatMessage);
+			if (m.matches())
+			{
+				String skillName = StringUtils.capitalize(m.group("skill") != null ? m.group("skill") : m.group("skill99"));
+				String skillLevel = m.group("level") != null ? m.group("level") : "99";
+				String fileName = skillName + "(" + skillLevel + ")";
+				String screenshotSubDir = "Levels";
+				takeScreenshot(fileName, screenshotSubDir);
+			}
+		}
 	}
 
 	@Subscribe
@@ -707,8 +722,9 @@ public class ScreenshotPlugin extends Plugin
 				}
 				if (topText.equalsIgnoreCase("Combat Task Completed!") && config.screenshotCombatAchievements() && client.getVarbitValue(Varbits.COMBAT_ACHIEVEMENTS_POPUP) == 0)
 				{
-					String entry = Text.removeTags(bottomText).substring("Task Completed: ".length());
-					String fileName = "Combat task (" + entry.replaceAll("[:?]", "") + ")";
+					String[] s = bottomText.split("<.*?>");
+					String task = s[1];
+					String fileName = "Combat task (" + task.replaceAll("[:?]", "") + ")";
 					takeScreenshot(fileName, SD_COMBAT_ACHIEVEMENTS);
 				}
 				notificationStarted = false;
@@ -817,7 +833,7 @@ public class ScreenshotPlugin extends Plugin
 	static String parseCombatAchievementWidget(final String text)
 	{
 		final Matcher m = COMBAT_ACHIEVEMENTS_PATTERN.matcher(text);
-		if (m.matches())
+		if (m.find())
 		{
 			String task = m.group("task").replaceAll("[:?]", "");
 			return "Combat task (" + task + ")";
