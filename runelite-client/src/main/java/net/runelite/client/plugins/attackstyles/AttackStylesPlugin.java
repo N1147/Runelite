@@ -230,7 +230,7 @@ public class AttackStylesPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick gameTick)
 	{
-		if (attackStyle != prevAttackStyle && warnedSkillSelected && config.showChatWarnings())
+		if (attackStyle != prevAttackStyle && warnedSkillSelected)
 		{
 			final String message = new ChatMessageBuilder()
 				.append(ChatColorType.HIGHLIGHT)
