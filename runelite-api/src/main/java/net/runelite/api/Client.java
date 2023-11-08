@@ -1024,7 +1024,7 @@ public interface Client extends OAuthApi, GameEngine
 	 * @param prayer the prayer
 	 * @return true if the prayer is active, false otherwise
 	 */
-	boolean isPrayerActive(Prayer prayer);
+	//boolean isPrayerActive(Prayer prayer);
 
 	/**
 	 * Gets the current experience towards a skill.

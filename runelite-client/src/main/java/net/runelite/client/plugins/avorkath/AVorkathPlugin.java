@@ -82,13 +82,13 @@ public class AVorkathPlugin extends Plugin
 	WorldPoint dodgeLeft;
 	Instant botTimer;
 	private boolean inFight;
-	private Prayer prayerToClick;
+	//private Prayer prayerToClick;
 	private Random r = new Random();
 	public AVorkathPlugin(){
 		inFight = false;
 	}
 	List<String> lootableItems = new ArrayList<>();
-	private Prayer prayer;
+	//private Prayer prayer;
 	boolean startTeaks = false;
 	boolean killedvorkath = false;
 	boolean noBomb = true;
@@ -162,7 +162,7 @@ public class AVorkathPlugin extends Plugin
 		attackTicks = -1;
 		totalTicks = 0;
 		inFight = false;
-		prayerToClick = null;
+		//prayerToClick = null;
 		noBomb = true;
 		noBomb2 = true;
 		dodgeRight = null;

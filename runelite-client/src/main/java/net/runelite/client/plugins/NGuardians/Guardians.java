@@ -292,13 +292,13 @@ public class Guardians extends Plugin
 				//clientThread.invoke(() -> client.invokeMenuAction("", "", 0, MenuAction.WIDGET_CONTINUE.getId(), 1, 14352385));
 				return NGuardiansState.IDLE;
 			}
-			if (core.inventoryContains(POUCHES)) {
+			/*if (core.inventoryContains(POUCHES)) {
 				currentEntry = "Dark Mage";
 				core.sendGameMessage("REPAIRING POUCHES TEXT");
 				core.clickSpell(WidgetInfo.SPELL_NPC_CONTACT);
 				//clientThread.invoke(() -> client.invokeMenuAction("", "", 2, MenuAction.CC_OP.getId(), -1, 14286953));
 				return NGuardiansState.IDLE;
-			}
+			}*/
 		}
 
 		if (client.getWidget(746, 30).getText().equals("7/8")

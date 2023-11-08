@@ -82,7 +82,7 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxPanelManager;
-import net.runelite.client.plugins.bank.BankSearch;
+//import net.runelite.client.plugins.bank.BankSearch;
 import net.runelite.client.plugins.banktags.BankTagsConfig;
 import net.runelite.client.plugins.banktags.BankTagsPlugin;
 import static net.runelite.client.plugins.banktags.BankTagsPlugin.TAG_SEARCH;
@@ -140,7 +140,7 @@ public class TabInterface
 	private final ChatboxPanelManager chatboxPanelManager;
 	private final BankTagsConfig config;
 	private final Notifier notifier;
-	private final BankSearch bankSearch;
+	//private final BankSearch bankSearch;
 	private final ChatboxItemSearch searchProvider;
 	private final Rectangle bounds = new Rectangle();
 	private final Rectangle canvasBounds = new Rectangle();
@@ -175,7 +175,7 @@ public class TabInterface
 		final ChatboxPanelManager chatboxPanelManager,
 		final BankTagsConfig config,
 		final Notifier notifier,
-		final BankSearch bankSearch,
+		//final BankSearch bankSearch,
 		final ChatboxItemSearch searchProvider)
 	{
 		this.client = client;
@@ -186,7 +186,7 @@ public class TabInterface
 		this.chatboxPanelManager = chatboxPanelManager;
 		this.config = config;
 		this.notifier = notifier;
-		this.bankSearch = bankSearch;
+		//this.bankSearch = bankSearch;
 		this.searchProvider = searchProvider;
 	}
 
@@ -424,7 +424,7 @@ public class TabInterface
 				if (tab.equals(activeTab))
 				{
 					activateTab(null);
-					bankSearch.reset(true);
+					//bankSearch.reset(true);
 				}
 				else
 				{
@@ -676,7 +676,7 @@ public class TabInterface
 			final ItemComposition item = getItem(event.getParam0());
 			final int itemId = item.getId();
 			tagManager.removeTag(itemId, activeTab.getTag());
-			bankSearch.layoutBank(); // re-layout to filter the removed item out
+			//bankSearch.layoutBank(); // re-layout to filter the removed item out
 		}
 		else if (event.getMenuAction() == MenuAction.RUNELITE
 			&& ((event.getParam1() == ComponentID.BANK_DEPOSIT_INVENTORY && event.getMenuOption().equals(TAG_INVENTORY))
@@ -883,7 +883,7 @@ public class TabInterface
 		if (activeTab != null && activeTab.getTag().equals(tag))
 		{
 			activateTab(null);
-			bankSearch.reset(true);
+			//bankSearch.reset(true);
 		}
 
 		tabManager.remove(tag);
@@ -1176,7 +1176,7 @@ public class TabInterface
 	{
 		activateTab(tabManager.find(tag));
 		tagTabActive = BankTagsPlugin.TAG_TABS_CONFIG.equals(tag);
-		bankSearch.reset(true); // clear search dialog & relayout bank for new tab.
+		//bankSearch.reset(true); // clear search dialog & relayout bank for new tab.
 
 		// When searching the button has a script on timer to detect search end, that will set the background back
 		// and remove the timer. However since we are going from a bank search to our fake search this will not remove
