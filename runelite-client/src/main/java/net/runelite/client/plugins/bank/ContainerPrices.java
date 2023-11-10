@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Tomas Slusny <slusnucky@gmail.com>
+ * Copyright (c) 2019, TheStonedTurtle <https://github.com/TheStonedTurtle>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,52 +22,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.defaultworld;
+package net.runelite.client.plugins.bank;
 
-import net.runelite.client.config.Config;
-import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
+import lombok.Value;
 
-@ConfigGroup(DefaultWorldConfig.GROUP)
-public interface DefaultWorldConfig extends Config
+@Value
+class ContainerPrices
 {
-	String GROUP = "defaultworld";
-
-	@ConfigItem(
-		keyName = "defaultWorld",
-		name = "Default world",
-		description = "World to use as default one"
-	)
-	default int getWorld()
-	{
-		return 0;
-	}
-
-	@ConfigItem(
-		keyName = "useLastWorld",
-		name = "Use Last World",
-		description = "Use the last world you used as the default"
-	)
-	default boolean useLastWorld()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "lastWorld",
-		name = "",
-		description = "",
-		hidden = true
-	)
-	default int lastWorld()
-	{
-		return 0;
-	}
-
-	@ConfigItem(
-		keyName = "lastWorld",
-		name = "",
-		description = ""
-	)
-	void lastWorld(int lastWorld);
+    private long gePrice;
+    private long highAlchPrice;
 }
