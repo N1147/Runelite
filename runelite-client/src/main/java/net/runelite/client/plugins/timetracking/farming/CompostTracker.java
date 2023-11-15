@@ -159,8 +159,7 @@ public class CompostTracker
 		{
 			case WIDGET_TARGET_ON_GAME_OBJECT:
 				Widget w = client.getSelectedWidget();
-				assert w != null;
-				return COMPOST_ITEMS.contains(w.getItemId()) || w.getId() == ComponentID.SPELLBOOK_FERTILE_SOIL;
+				return w != null && (COMPOST_ITEMS.contains(w.getItemId()) || w.getId() == ComponentID.SPELLBOOK_FERTILE_SOIL);
 
 			case GAME_OBJECT_FIRST_OPTION:
 			case GAME_OBJECT_SECOND_OPTION:
