@@ -191,7 +191,7 @@ public class ARevenants extends Plugin
 			if (event.getTile().getWorldLocation().isInArea(insideCave3, new WorldArea(new WorldPoint(3223, 10135, 0), new WorldPoint(3260, 10188, 0)))) {
 				if (!event.getTile().getWorldLocation().isInArea(new WorldArea(new WorldPoint(3220, 10190, 0), new WorldPoint(3255, 10226, 0))) && !event.getTile().getWorldLocation().isInArea(new WorldArea(new WorldPoint(3205, 10110, 0), new WorldPoint(3238, 10150, 0)))) {
 					if (!config.pickupFood()) {
-						if (item.getId() == ItemID.BLIGHTED_KARAMBWAN || item.getId() == ItemID.BLIGHTED_MANTA_RAY || item.getId() == ItemID.BLIGHTED_ANGLERFISH || event.getItem().getId() == ItemID.RUNE_ARROW || event.getItem().getId() == ItemID.AMETHYST_ARROW || event.getItem().getId() == ItemID.COINS_995 || event.getItem().getId() == ItemID.BLIGHTED_BIND_SACK || event.getItem().getId() == ItemID.BLIGHTED_ANCIENT_ICE_SACK || event.getItem().getId() == ItemID.BLIGHTED_ENTANGLE_SACK || event.getItem().getId() == ItemID.BLIGHTED_SNARE_SACK || event.getItem().getId() == ItemID.BLIGHTED_TELEPORT_SPELL_SACK || event.getItem().getId() == ItemID.BLIGHTED_VENGEANCE_SACK) {
+						if (item.getId() == ItemID.BLIGHTED_KARAMBWAN || item.getId() == ItemID.BLIGHTED_MANTA_RAY || item.getId() == ItemID.BLIGHTED_ANGLERFISH || event.getItem().getId() == ItemID.RUNE_ARROW || event.getItem().getId() == ItemID.AMETHYST_ARROW || event.getItem().getId() == ItemID.COINS_995 || event.getItem().getId() == ItemID.BLIGHTED_ANCIENT_ICE_SACK || event.getItem().getId() == ItemID.BLIGHTED_ENTANGLE_SACK || event.getItem().getId() == ItemID.BLIGHTED_TELEPORT_SPELL_SACK || event.getItem().getId() == ItemID.BLIGHTED_VENGEANCE_SACK) {
 							return;
 						}
 					}
@@ -208,7 +208,7 @@ public class ARevenants extends Plugin
 	private void onItemDespawned(ItemDespawned event) {
 		TileItem item = event.getItem();
 		if (!config.pickupFood()) {
-			if (item.getId() == ItemID.BLIGHTED_KARAMBWAN || item.getId() == ItemID.BLIGHTED_MANTA_RAY || item.getId() == ItemID.BLIGHTED_ANGLERFISH || event.getItem().getId() == ItemID.RUNE_ARROW || event.getItem().getId() == ItemID.AMETHYST_ARROW || event.getItem().getId() == ItemID.COINS_995 || event.getItem().getId() == ItemID.BLIGHTED_BIND_SACK || event.getItem().getId() == ItemID.BLIGHTED_ANCIENT_ICE_SACK || event.getItem().getId() == ItemID.BLIGHTED_ENTANGLE_SACK || event.getItem().getId() == ItemID.BLIGHTED_SNARE_SACK || event.getItem().getId() == ItemID.BLIGHTED_TELEPORT_SPELL_SACK || event.getItem().getId() == ItemID.BLIGHTED_VENGEANCE_SACK) {
+			if (item.getId() == ItemID.BLIGHTED_KARAMBWAN || item.getId() == ItemID.BLIGHTED_MANTA_RAY || item.getId() == ItemID.BLIGHTED_ANGLERFISH || event.getItem().getId() == ItemID.RUNE_ARROW || event.getItem().getId() == ItemID.AMETHYST_ARROW || event.getItem().getId() == ItemID.COINS_995 || event.getItem().getId() == ItemID.BLIGHTED_ANCIENT_ICE_SACK || event.getItem().getId() == ItemID.BLIGHTED_ENTANGLE_SACK || event.getItem().getId() == ItemID.BLIGHTED_TELEPORT_SPELL_SACK || event.getItem().getId() == ItemID.BLIGHTED_VENGEANCE_SACK) {
 				return;
 			}
 		}

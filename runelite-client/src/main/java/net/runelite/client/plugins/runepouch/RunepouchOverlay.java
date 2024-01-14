@@ -53,12 +53,10 @@ class RunepouchOverlay extends WidgetItemOverlay
 {
 	private static final int NUM_SLOTS = 6;
 	private static final int[] AMOUNT_VARBITS = {
-		Varbits.RUNE_POUCH_AMOUNT1, Varbits.RUNE_POUCH_AMOUNT2, Varbits.RUNE_POUCH_AMOUNT3, Varbits.RUNE_POUCH_AMOUNT4,
-		Varbits.RUNE_POUCH_AMOUNT5, Varbits.RUNE_POUCH_AMOUNT6
+		Varbits.RUNE_POUCH_AMOUNT1, Varbits.RUNE_POUCH_AMOUNT2, Varbits.RUNE_POUCH_AMOUNT3, Varbits.RUNE_POUCH_AMOUNT4
 	};
 	private static final int[] RUNE_VARBITS = {
-		Varbits.RUNE_POUCH_RUNE1, Varbits.RUNE_POUCH_RUNE2, Varbits.RUNE_POUCH_RUNE3, Varbits.RUNE_POUCH_RUNE4,
-		Varbits.RUNE_POUCH_RUNE5, Varbits.RUNE_POUCH_RUNE6
+		Varbits.RUNE_POUCH_RUNE1, Varbits.RUNE_POUCH_RUNE2, Varbits.RUNE_POUCH_RUNE3, Varbits.RUNE_POUCH_RUNE4
 	};
 	private static final int IMAGE_SIZE = 11;
 	private static final BufferedImage[] RUNE_IMAGES = {
