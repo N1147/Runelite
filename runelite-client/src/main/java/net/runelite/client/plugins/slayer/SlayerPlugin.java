@@ -363,16 +363,16 @@ public class SlayerPlugin extends Plugin
 		{
 			int taskId = client.getVarpValue(VarPlayer.SLAYER_TASK_CREATURE);
 			String taskName;
-			if (taskId == 98 /* Bosses, from [proc,helper_slayer_current_assignment] */)
+			/*if (taskId == 98 /* Bosses, from [proc,helper_slayer_current_assignment] )
 			{
 				taskName = client.getEnum(EnumID.SLAYER_TASK_BOSS)
 					.getStringValue(client.getVarbitValue(Varbits.SLAYER_TASK_BOSS));
 			}
 			else
-			{
+			{*/
 				taskName = client.getEnum(EnumID.SLAYER_TASK_CREATURE)
 					.getStringValue(taskId);
-			}
+			//}
 
 			int areaId = client.getVarpValue(VarPlayer.SLAYER_TASK_LOCATION);
 			String taskLocation = null;

@@ -59,8 +59,8 @@ class TopLevelConfigPanel extends PluginPanel
 	TopLevelConfigPanel(
 		EventBus eventBus,
 		PluginListPanel pluginListPanel,
-		ProfilePanel profilePanel,
-		Provider<PluginHubPanel> pluginHubPanelProvider
+		ProfilePanel profilePanel
+		//Provider<PluginHubPanel> pluginHubPanelProvider
 	)
 	{
 		super(false);
@@ -84,7 +84,7 @@ class TopLevelConfigPanel extends PluginPanel
 
 		addTab(profilePanel, "profile_icon.png", "Profiles");
 
-		addTab(pluginHubPanelProvider, "plugin_hub_icon.png", "Plugin Hub");
+		//addTab(pluginHubPanelProvider, "plugin_hub_icon.png", "Plugin Hub");
 
 		tabGroup.select(pluginListPanelTab);
 	}
